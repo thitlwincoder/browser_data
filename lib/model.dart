@@ -9,18 +9,18 @@ History historyFromJson(String str) => History.fromJson(json.decode(str));
 String historyToJson(History data) => json.encode(data.toJson());
 
 class History {
-  final String? url;
+  final String url;
   final DateTime? visitTime;
   final int? visitDuration;
-  final String? title;
+  final String title;
   final int? visitCount;
   final DateTime? lastVisitTime;
 
   History({
-    this.url,
+    required this.url,
     this.visitTime,
     this.visitDuration,
-    this.title,
+    required this.title,
     this.visitCount,
     this.lastVisitTime,
   });

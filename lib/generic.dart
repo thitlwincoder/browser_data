@@ -11,7 +11,9 @@ import 'package:sqlite3/sqlite3.dart';
 import 'model.dart';
 
 class Browser {
+  final String? androidPath;
   final String? windowsPath;
+
   final bool profileSupport;
   final List<String> profileDirPrefixes;
   final String? bookmarksFile;
@@ -22,6 +24,7 @@ class Browser {
   final String historySQL;
 
   Browser({
+    this.androidPath,
     this.windowsPath,
     this.profileSupport = false,
     this.profileDirPrefixes = const [],
@@ -32,9 +35,13 @@ class Browser {
     required this.historyFile,
     required this.historySQL,
   }) {
-    var homedir = Platform.environment['UserProfile']!;
     if (Platform.isWindows) {
+      var homedir = Platform.environment['UserProfile']!;
       historyDir = join(homedir, windowsPath);
+    } else if (Platform.isAndroid) {
+      historyDir = androidPath;
+    } else {
+      throw Exception('Platform Not Supported');
     }
 
     if (profileSupport && profileDirPrefixes.isEmpty) {
@@ -112,6 +119,7 @@ class Browser {
 class ChromiumBasedBrowser extends Browser {
   ChromiumBasedBrowser({
     String? name,
+    String? androidPath,
     String? windowsPath,
     List<String>? aliases,
     bool profileSupport = false,
@@ -119,6 +127,7 @@ class ChromiumBasedBrowser extends Browser {
           name: name,
           aliases: aliases,
           profileSupport: profileSupport,
+          androidPath: androidPath,
           windowsPath: windowsPath,
           historyFile: 'History',
           bookmarksFile: 'Bookmarks',

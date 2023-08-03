@@ -1,11 +1,9 @@
 import 'package:browser_history/browsers.dart';
+import 'package:browser_history/model.dart';
 
 class BrowserHistory {
-  getHistory() async {
+  Future<List<History>> getHistory() {
     var browser = Chrome();
-    var histories = await browser.fetchHistory();
-    for (var e in histories) {
-      print(e.toJson());
-    }
+    return browser.fetchHistory();
   }
 }
