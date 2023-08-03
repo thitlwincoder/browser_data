@@ -1,5 +1,6 @@
-import 'package:browser_history/browser_history.dart' as browser_history;
+import 'package:browser_history/browser_history.dart';
 
 void main(List<String> arguments) {
-  print('Hello world: ${browser_history.calculate()}!');
+  var broswer = BrowserHistory();
+  broswer.getHistory();
 }
