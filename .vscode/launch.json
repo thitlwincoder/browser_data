@@ -8,7 +8,7 @@
             "name": "browser_history",
             "request": "launch",
             "type": "dart",
-            "program": "bin/browser_history.dart"
+            "program": "example/lib/main.dart"
         }
     ]
 }

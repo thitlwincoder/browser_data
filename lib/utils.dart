@@ -5,8 +5,6 @@ import 'package:win32_registry/win32_registry.dart';
 void getBrowsers() {}
 
 String _defaultBrowserWin() {
-  if (!Platform.isWindows) {}
-
   final key = Registry.openPath(
     RegistryHive.currentUser,
     path:

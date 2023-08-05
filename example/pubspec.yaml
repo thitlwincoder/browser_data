@@ -11,7 +11,13 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: ^1.0.2
+  intl: ^0.18.0
+
+  fluent_ui: ^4.7.1
+  window_manager: ^0.3.5
+
+  flutter_vector_icons: ^2.0.0
+
   browser_history:
     path: ../
 

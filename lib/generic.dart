@@ -10,36 +10,48 @@ import 'package:sqlite3/sqlite3.dart';
 
 import 'model.dart';
 
-class Browser {
-  final String? androidPath;
-  final String? windowsPath;
+abstract class Browser {
+  final String? name;
 
   final bool profileSupport;
-  final List<String> profileDirPrefixes;
-  final String? bookmarksFile;
-  String? historyDir;
+
   final List<String>? aliases;
-  final String? name;
-  final String historyFile;
+
+  final List<String> profileDirPrefixes;
+
+  final String? macPath;
+  final String? linuxPath;
+  final String? windowsPath;
+
   final String historySQL;
+  final String historyFile;
+
+  final String? bookmarksFile;
+
+  String? historyDir;
 
   Browser({
-    this.androidPath,
-    this.windowsPath,
-    this.profileSupport = false,
+    required this.name,
+    required this.profileSupport,
+    this.aliases,
     this.profileDirPrefixes = const [],
+    this.macPath,
+    this.linuxPath,
+    this.windowsPath,
+    required this.historySQL,
+    required this.historyFile,
     this.bookmarksFile,
     this.historyDir,
-    this.aliases,
-    this.name,
-    required this.historyFile,
-    required this.historySQL,
   }) {
     if (Platform.isWindows) {
       var homedir = Platform.environment['UserProfile']!;
       historyDir = join(homedir, windowsPath);
-    } else if (Platform.isAndroid) {
-      historyDir = androidPath;
+    } else if (Platform.isMacOS) {
+      var homedir = Platform.environment['UserProfile']!;
+      historyDir = join(homedir, macPath);
+    } else if (Platform.isLinux) {
+      var homedir = Platform.environment['UserProfile']!;
+      historyDir = join(homedir, linuxPath);
     } else {
       throw Exception('Platform Not Supported');
     }
@@ -48,6 +60,8 @@ class Browser {
       profileDirPrefixes.add('*');
     }
   }
+
+  void bookmarksParser(String bookmarkPath) {}
 
   // List<String> profiles({required String profileFile}) {
   //   if (!Directory(historyDir!).existsSync()) {
@@ -78,6 +92,10 @@ class Browser {
     return '$historyDir/$profileDir/$historyFile';
   }
 
+  String bookmarkPathProfile({required String profileDir}) {
+    return '$historyDir/$profileDir/$bookmarksFile';
+  }
+
   List<String> paths({required String profileFile}) {
     return [
       // for (var profileDir in profiles(profileFile: profileFile))
@@ -99,13 +117,18 @@ class Browser {
     bool desc = false,
   }) async {
     historyPaths ??= paths(profileFile: historyFile);
-    var tmpDir = MemoryFileSystem().file(historyFile);
-    List<History> histories = [];
-    for (var historyPath in historyPaths) {
-      await FileCopy.copyFile(File(historyPath), tmpDir.path);
+    var dir = Directory.systemTemp.createTempSync();
+    var f = File("${dir.path}/$historyFile");
+    f.createSync();
+    String tmpFile = f.path;
 
-      var conn = sqlite3
-          .open('file:${tmpDir.path}?mode=ro&immutable=1&nolock=1', uri: true);
+    List<History> histories = [];
+
+    for (var historyPath in historyPaths) {
+      await FileCopy.copyFile(File(historyPath), tmpFile);
+
+      var conn =
+          sqlite3.open('file:$tmpFile?mode=ro&immutable=1&nolock=1', uri: true);
       var result = conn.select(historySQL);
       for (var e in result) {
         histories.add(History.fromJson(e));
@@ -114,21 +137,47 @@ class Browser {
     }
     return histories;
   }
+
+  Future<List<History>> fetchBookmarks({
+    List<String>? bookmarkPaths,
+    bool sort = true,
+    bool desc = false,
+  }) async {
+    assert(
+      bookmarksFile != null,
+      "Bookmarks are not supported for $name browser",
+    );
+    bookmarkPaths ??= paths(profileFile: bookmarksFile!);
+    String tmpFile = MemoryFileSystem().file(historyFile).path;
+
+    List<History> histories = [];
+    for (var bookmarkPath in bookmarkPaths) {
+      var isExists = await File(bookmarkPath).exists();
+      if (!isExists) continue;
+
+      await FileCopy.copyFile(File(bookmarkPath), tmpFile);
+
+      bookmarksParser(tmpFile);
+    }
+    return histories;
+  }
 }
 
 class ChromiumBasedBrowser extends Browser {
   ChromiumBasedBrowser({
-    String? name,
-    String? androidPath,
-    String? windowsPath,
-    List<String>? aliases,
-    bool profileSupport = false,
+    required String name,
+    String? macPath,
+    String? linuxPath,
+    required String? windowsPath,
+    required List<String>? aliases,
+    required bool profileSupport,
   }) : super(
           name: name,
           aliases: aliases,
-          profileSupport: profileSupport,
-          androidPath: androidPath,
+          macPath: macPath,
+          linuxPath: linuxPath,
           windowsPath: windowsPath,
+          profileSupport: profileSupport,
           historyFile: 'History',
           bookmarksFile: 'Bookmarks',
           profileDirPrefixes: ["Default*", "Profile*"],
@@ -150,10 +199,11 @@ class ChromiumBasedBrowser extends Browser {
                 visits.visit_duration > 0
             ORDER BY
                 visit_time DESC
-            LIMIT 1
+            LIMIT 20
         """,
         );
 
+  @override
   void bookmarksParser(String bookmarkPath) {
     var bp = File(bookmarkPath).readAsStringSync();
     print(bp);

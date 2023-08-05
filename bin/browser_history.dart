@@ -1,6 +1,10 @@
 import 'package:browser_history/browser_history.dart';
 
-void main(List<String> arguments) {
+Future<void> main(List<String> arguments) async {
   var broswer = BrowserHistory();
-  broswer.getHistory();
+  var histories = await broswer.getHistory();
+  for (var e in histories) {
+    print(e.toJson());
+    print('-' * 10);
+  }
 }
