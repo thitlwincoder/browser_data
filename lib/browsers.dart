@@ -4,7 +4,7 @@ import 'package:sqlite3/sqlite3.dart';
 import 'generic.dart';
 
 class Chromium extends ChromiumBasedBrowser {
-  Chromium()
+  Chromium({super.sqlite3Path})
       : super(
           name: 'Chromium',
           profileSupport: true,
@@ -15,7 +15,7 @@ class Chromium extends ChromiumBasedBrowser {
 }
 
 class Chrome extends ChromiumBasedBrowser {
-  Chrome()
+  Chrome({super.sqlite3Path})
       : super(
           name: 'Chrome',
           profileSupport: true,
@@ -31,6 +31,7 @@ class Firefox extends Browser {
     String? name,
     String? linuxPath,
     List<String>? aliases,
+    super.sqlite3Path,
   }) : super(
           name: name ?? 'Firefox',
           profileSupport: true,
@@ -90,7 +91,7 @@ class Firefox extends Browser {
 }
 
 class LibreWolf extends Firefox {
-  LibreWolf()
+  LibreWolf({super.sqlite3Path})
       : super(
           name: 'LibreWolf',
           linuxPath: '.librewolf',
@@ -99,7 +100,7 @@ class LibreWolf extends Firefox {
 }
 
 class Safari extends Browser {
-  Safari()
+  Safari({super.sqlite3Path})
       : super(
           name: 'Safari',
           macPath: 'Library/Safari',
@@ -130,7 +131,7 @@ class Safari extends Browser {
 }
 
 class Edge extends ChromiumBasedBrowser {
-  Edge()
+  Edge({super.sqlite3Path})
       : super(
           name: 'Edge',
           profileSupport: true,
@@ -147,7 +148,7 @@ class Edge extends ChromiumBasedBrowser {
 }
 
 class Opera extends ChromiumBasedBrowser {
-  Opera()
+  Opera({super.sqlite3Path})
       : super(
           name: 'Opera',
           profileSupport: false,
@@ -159,7 +160,7 @@ class Opera extends ChromiumBasedBrowser {
 }
 
 class OperaGX extends ChromiumBasedBrowser {
-  OperaGX()
+  OperaGX({super.sqlite3Path})
       : super(
           name: 'OperaGX',
           profileSupport: false,
@@ -169,7 +170,7 @@ class OperaGX extends ChromiumBasedBrowser {
 }
 
 class Brave extends ChromiumBasedBrowser {
-  Brave()
+  Brave({super.sqlite3Path})
       : super(
           name: 'Brave',
           profileSupport: true,
@@ -181,7 +182,7 @@ class Brave extends ChromiumBasedBrowser {
 }
 
 class Vivaldi extends ChromiumBasedBrowser {
-  Vivaldi()
+  Vivaldi({super.sqlite3Path})
       : super(
           name: 'Vivaldi',
           profileSupport: true,

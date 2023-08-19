@@ -3,11 +3,12 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
 
-import 'package:file/memory.dart';
 import 'package:file_copy/file_copy.dart';
 import 'package:path/path.dart';
+import 'package:sqlite3/open.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 import 'model.dart';
@@ -32,6 +33,8 @@ abstract class Browser {
 
   String? historyDir;
 
+  final String? sqlite3Path;
+
   Browser({
     required this.name,
     required this.profileSupport,
@@ -44,7 +47,12 @@ abstract class Browser {
     required this.historyFile,
     this.bookmarksFile,
     this.historyDir,
+    this.sqlite3Path,
   }) {
+    if (sqlite3Path != null) {
+      open.overrideForAll(() => DynamicLibrary.open(sqlite3Path!));
+    }
+
     Map<String, String> envVars = Platform.environment;
     if (Platform.isWindows) {
       var homedir = envVars['UserProfile']!;
@@ -149,7 +157,10 @@ abstract class Browser {
     var bookmarkPaths = paths(profileFile: bookmarksFile!);
 
     for (var bookmarkPath in bookmarkPaths) {
-      String tmpFile = MemoryFileSystem().file(historyFile).path;
+      var dir = Directory.systemTemp.createTempSync();
+      var f = File("${dir.path}/$bookmarksFile");
+      await f.create();
+      String tmpFile = f.path;
 
       var isExists = await File(bookmarkPath).exists();
       if (!isExists) return null;
@@ -168,6 +179,7 @@ class ChromiumBasedBrowser extends Browser {
     String? macPath,
     String? linuxPath,
     required String? windowsPath,
+    String? sqlite3Path,
     required List<String>? aliases,
     required bool profileSupport,
   }) : super(
@@ -176,6 +188,7 @@ class ChromiumBasedBrowser extends Browser {
           macPath: macPath,
           linuxPath: linuxPath,
           windowsPath: windowsPath,
+          sqlite3Path: sqlite3Path,
           profileSupport: profileSupport,
           historyFile: 'History',
           bookmarksFile: 'Bookmarks',
