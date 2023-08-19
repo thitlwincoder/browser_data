@@ -8,10 +8,10 @@ Future<void> main(List<String> args) async {
   //   print('-' * 10);
   // }
 
-   var b = await Chrome().fetchBookmarks();
+  var b = await Chrome().fetchBookmarks();
 
-  for (var d in b) {
+  for (var d in b!.bookmarkBar.children!) {
     print(d.toJson());
-    print('-' * 10);
+    print('=' * 10);
   }
 }

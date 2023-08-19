@@ -78,8 +78,8 @@ class BookmarkData {
   final String name;
   final Type type;
   final String? url;
-  final String dateAdded;
-  final String dateLastUsed;
+  final DateTime dateAdded;
+  final DateTime dateLastUsed;
   final List<BookmarkData>? children;
 
   BookmarkData({
@@ -95,11 +95,15 @@ class BookmarkData {
         name: json["name"],
         type: Type.from(json["type"]),
         url: json["url"],
-        dateAdded: json["date_added"],
-        dateLastUsed: json["date_last_used"],
-        children: List<BookmarkData>.from(
-          json["children"]?.map((x) => BookmarkData.fromJson(x)) ?? [],
-        ),
+        dateAdded:
+            DateTime.fromMicrosecondsSinceEpoch(int.parse(json["date_added"])),
+        dateLastUsed: DateTime.fromMicrosecondsSinceEpoch(
+            int.parse(json["date_last_used"])),
+        children: json["children"] == null
+            ? null
+            : List<BookmarkData>.from(
+                json["children"]!.map((x) => BookmarkData.fromJson(x)),
+              ),
       );
 
   Map<String, dynamic> toJson() => {

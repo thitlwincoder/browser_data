@@ -98,27 +98,23 @@ abstract class Browser {
     return '$historyDir/$profileDir/$bookmarksFile';
   }
 
-  List<String> paths({required String profileFile}) {
-    return [
-      // for (var profileDir in profiles(profileFile: profileFile))
-      join(historyDir!, 'Default', profileFile)
-    ];
+  String paths({required String profileFile}) {
+    return join(historyDir!, 'Default', profileFile);
   }
 
-  Future<void> historyProfiles({required List<String> profileDirs}) {
-    var historyPaths = [
-      for (var profileDir in profileDirs)
-        historyPathProfile(profileDir: profileDir),
-    ];
-    return fetchHistory(historyPaths: historyPaths);
-  }
+  // Future<void> historyProfiles({required List<String> profileDirs}) {
+  //   var historyPaths = [
+  //     for (var profileDir in profileDirs)
+  //       historyPathProfile(profileDir: profileDir),
+  //   ];
+  //   return fetchHistory(historyPaths: historyPaths);
+  // }
 
   Future<List<History>> fetchHistory({
-    List<String>? historyPaths,
     bool sort = true,
     bool desc = false,
   }) async {
-    historyPaths ??= paths(profileFile: historyFile);
+    var historyPath = paths(profileFile: historyFile);
     var dir = Directory.systemTemp.createTempSync();
     var f = File("${dir.path}/$historyFile");
     await f.create();
@@ -126,22 +122,19 @@ abstract class Browser {
 
     List<History> histories = [];
 
-    for (var historyPath in historyPaths) {
-      await FileCopy.copyFile(File(historyPath), tmpFile);
+    await FileCopy.copyFile(File(historyPath), tmpFile);
 
-      var conn =
-          sqlite3.open('file:$tmpFile?mode=ro&immutable=1&nolock=1', uri: true);
-      var result = conn.select(historySQL);
-      for (var e in result) {
-        histories.add(History.fromJson(e));
-      }
-      conn.dispose();
+    var conn =
+        sqlite3.open('file:$tmpFile?mode=ro&immutable=1&nolock=1', uri: true);
+    var result = conn.select(historySQL);
+    for (var e in result) {
+      histories.add(History.fromJson(e));
     }
+    conn.dispose();
     return histories;
   }
 
-  Future<List<History>> fetchBookmarks({
-    List<String>? bookmarkPaths,
+  Future<Bookmark?> fetchBookmarks({
     bool sort = true,
     bool desc = false,
   }) async {
@@ -149,19 +142,15 @@ abstract class Browser {
       bookmarksFile != null,
       "Bookmarks are not supported for $name browser",
     );
-    bookmarkPaths ??= paths(profileFile: bookmarksFile!);
+    var bookmarkPath = paths(profileFile: bookmarksFile!);
     String tmpFile = MemoryFileSystem().file(historyFile).path;
 
-    List<History> histories = [];
-    for (var bookmarkPath in bookmarkPaths) {
-      var isExists = await File(bookmarkPath).exists();
-      if (!isExists) continue;
+    var isExists = await File(bookmarkPath).exists();
+    if (!isExists) return null;
 
-      await FileCopy.copyFile(File(bookmarkPath), tmpFile);
+    await FileCopy.copyFile(File(bookmarkPath), tmpFile);
 
-      bookmarksParser(tmpFile);
-    }
-    return histories;
+    return bookmarksParser(tmpFile);
   }
 }
 
