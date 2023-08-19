@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 // String _paths() {}
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -65,30 +66,25 @@ abstract class Browser {
 
   Bookmark bookmarksParser(String bookmarkPath);
 
-  // List<String> profiles({required String profileFile}) {
-  //   if (!Directory(historyDir!).existsSync()) {
-  //     print('$name browser is not installed');
-  //     return [];
-  //   }
+  List<String> profiles({required String profileFile}) {
+    if (!Directory(historyDir!).existsSync()) {
+      print('$name browser is not installed');
+      return [];
+    }
 
-  //   if (!profileSupport) return ['.'];
+    if (!profileSupport) return ['.'];
 
-  //   List<String> profileDirs = [];
+    List<String> profileDirs = [];
 
-  //   var files = Directory(historyDir!).listSync();
+    var files = Directory(historyDir!).listSync(recursive: true);
 
-  //   files = Directory(files[0].path).listSync();
-  //   files = Directory(files[0].path).listSync();
-
-  //   for (var item in files) {
-  //     print(basename(item.path));
-  //     // if (basename(item.path) == profileFile) {
-  //     //   var path = historyDir!;
-  //     //   profileDirs.add(path);
-  //     // }
-  //   }
-  //   return profileDirs;
-  // }
+    for (var item in files) {
+      if (basename(item.path) == profileFile) {
+        profileDirs.add(basename(item.parent.path));
+      }
+    }
+    return profileDirs;
+  }
 
   String historyPathProfile({required String profileDir}) {
     return '$historyDir/$profileDir/$historyFile';
@@ -98,8 +94,11 @@ abstract class Browser {
     return '$historyDir/$profileDir/$bookmarksFile';
   }
 
-  String paths({required String profileFile}) {
-    return join(historyDir!, 'Default', profileFile);
+  List<String> paths({required String profileFile}) {
+    return [
+      for (var profileDir in profiles(profileFile: profileFile))
+        join(historyDir!, profileDir, profileFile)
+    ];
   }
 
   // Future<void> historyProfiles({required List<String> profileDirs}) {
@@ -111,26 +110,31 @@ abstract class Browser {
   // }
 
   Future<List<History>> fetchHistory({
+    List<String>? historyPaths,
     bool sort = true,
     bool desc = false,
   }) async {
-    var historyPath = paths(profileFile: historyFile);
-    var dir = Directory.systemTemp.createTempSync();
-    var f = File("${dir.path}/$historyFile");
-    await f.create();
-    String tmpFile = f.path;
+    historyPaths ??= paths(profileFile: historyFile);
 
     List<History> histories = [];
 
-    await FileCopy.copyFile(File(historyPath), tmpFile);
+    for (var historyPath in historyPaths) {
+      var dir = Directory.systemTemp.createTempSync();
+      var f = File("${dir.path}/$historyFile");
+      await f.create();
+      String tmpFile = f.path;
 
-    var conn =
-        sqlite3.open('file:$tmpFile?mode=ro&immutable=1&nolock=1', uri: true);
-    var result = conn.select(historySQL);
-    for (var e in result) {
-      histories.add(History.fromJson(e));
+      await FileCopy.copyFile(File(historyPath), tmpFile);
+
+      var conn =
+          sqlite3.open('file:$tmpFile?mode=ro&immutable=1&nolock=1', uri: true);
+      var result = conn.select(historySQL);
+      for (var e in result) {
+        histories.add(History.fromJson(e));
+      }
+      conn.dispose();
     }
-    conn.dispose();
+
     return histories;
   }
 
@@ -142,15 +146,19 @@ abstract class Browser {
       bookmarksFile != null,
       "Bookmarks are not supported for $name browser",
     );
-    var bookmarkPath = paths(profileFile: bookmarksFile!);
-    String tmpFile = MemoryFileSystem().file(historyFile).path;
+    var bookmarkPaths = paths(profileFile: bookmarksFile!);
 
-    var isExists = await File(bookmarkPath).exists();
-    if (!isExists) return null;
+    for (var bookmarkPath in bookmarkPaths) {
+      String tmpFile = MemoryFileSystem().file(historyFile).path;
 
-    await FileCopy.copyFile(File(bookmarkPath), tmpFile);
+      var isExists = await File(bookmarkPath).exists();
+      if (!isExists) return null;
 
-    return bookmarksParser(tmpFile);
+      await FileCopy.copyFile(File(bookmarkPath), tmpFile);
+
+      return bookmarksParser(tmpFile);
+    }
+    return null;
   }
 }
 

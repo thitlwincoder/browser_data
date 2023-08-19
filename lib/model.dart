@@ -32,11 +32,11 @@ class History {
 
   Map<String, dynamic> toJson() => {
         "url": url,
-        "visit_time": visitTime,
+        "visit_time": visitTime.toString(),
         "visit_duration": visitDuration,
         "title": title,
         "visit_count": visitCount,
-        "last_visit_time": lastVisitTime,
+        "last_visit_time": lastVisitTime.toString(),
       };
 }
 
@@ -110,8 +110,8 @@ class BookmarkData {
         "name": name,
         "type": type.name,
         "url": url,
-        "date_added": dateAdded,
-        "date_last_used": dateLastUsed,
+        "date_added": dateAdded.toString(),
+        "date_last_used": dateLastUsed.toString(),
         "children": children?.map((x) => x.toJson()).toList(),
       };
 }

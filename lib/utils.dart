@@ -15,11 +15,12 @@ String _defaultBrowserWin() {
     throw Exception('Could not determine default browser');
   }
 
-  return progId[0].toLowerCase();
+  return progId.toLowerCase();
 }
 
-void defaultBrowser() {
+String? defaultBrowser() {
   if (Platform.isWindows) {
-    _defaultBrowserWin();
+    return _defaultBrowserWin();
   }
+  return null;
 }

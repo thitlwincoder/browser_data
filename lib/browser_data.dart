@@ -1,13 +1,16 @@
+import 'dart:ffi';
+import 'dart:io';
+
+import 'package:sqlite3/open.dart';
+
 import 'browsers.dart';
 import 'model.dart';
 
-
-
 class BrowserData {
   BrowserData() {
-    // open.overrideForAll(() {
-    //   return DynamicLibrary.open('../sqlite3.dll');
-    // });
+    open.overrideForAll(() {
+      return DynamicLibrary.open('../sqlite3.dll');
+    });
   }
 
   Future<List<History>> getHistory() {
@@ -15,5 +18,8 @@ class BrowserData {
     return browser.fetchHistory();
   }
 
-  void getBookmark() {}
+  Future<Bookmark?> getBookmark() {
+    var browser = Chrome();
+    return browser.fetchBookmarks();
+  }
 }
