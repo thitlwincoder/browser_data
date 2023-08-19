@@ -1,4 +1,7 @@
-import 'package:browser_history/generic.dart';
+import 'package:browser_data/model.dart';
+import 'package:sqlite3/sqlite3.dart';
+
+import 'generic.dart';
 
 class Chromium extends ChromiumBasedBrowser {
   Chromium()
@@ -55,7 +58,7 @@ class Firefox extends Browser {
         );
 
   @override
-  void bookmarksParser(String bookmarkPath) {
+  Bookmark bookmarksParser(String bookmarkPath) {
     var bookmarkSQL = """
             SELECT
                 datetime(
@@ -72,12 +75,17 @@ class Firefox extends Browser {
                 AND moz_bookmarks.title IS NOT NULL
         """;
 
-    // var conn = sqlite3.open('file:$bookmarkPath?mode=ro', uri: true);
-    // var result = conn.select(bookmarkSQL);
+    var conn = sqlite3.open('file:$bookmarkPath?mode=ro', uri: true);
+    var result = conn.select(bookmarkSQL);
+
+    // TODO: implement bookmarksParser
+    throw UnimplementedError();
     // for (var e in result) {
-    //   // histories.add(History.fromJson(e));
+    //   bookmarks.add(Bookmark.fromJson(e));
     // }
     // conn.dispose();
+
+    // return Bookmark(bookmarkBar: bookmarkBar, other: other, synced: synced);
   }
 }
 
@@ -113,6 +121,12 @@ class Safari extends Browser {
             visit_time DESC
     """,
         );
+
+  @override
+  Bookmark bookmarksParser(String bookmarkPath) {
+    // TODO: implement bookmarksParser
+    throw UnimplementedError();
+  }
 }
 
 class Edge extends ChromiumBasedBrowser {

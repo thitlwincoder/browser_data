@@ -1,15 +1,17 @@
-name: browser_history
+name: browser_data
 description: A sample command-line application.
 version: 1.0.0
-repository: https://github.com/thitlwincoder/browser_history
+repository: https://github.com/thitlwincoder/browser_data
 environment:
   sdk: ^3.0.6
 
 dependencies:
   file: ^7.0.0
   file_copy: ^1.0.7
+
   path: ^1.8.3
   path_provider: ^2.0.15
+
   sqlite3: ^2.1.0
   win32_registry: ^1.1.1
 

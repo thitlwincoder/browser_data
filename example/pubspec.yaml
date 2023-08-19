@@ -18,7 +18,7 @@ dependencies:
 
   flutter_vector_icons: ^2.0.0
 
-  browser_history:
+  browser_data:
     path: ../
 
 dev_dependencies:

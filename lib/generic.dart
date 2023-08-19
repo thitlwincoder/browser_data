@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 // String _paths() {}
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file/memory.dart';
@@ -43,14 +44,15 @@ abstract class Browser {
     this.bookmarksFile,
     this.historyDir,
   }) {
+    Map<String, String> envVars = Platform.environment;
     if (Platform.isWindows) {
-      var homedir = Platform.environment['UserProfile']!;
+      var homedir = envVars['UserProfile']!;
       historyDir = join(homedir, windowsPath);
     } else if (Platform.isMacOS) {
-      var homedir = Platform.environment['UserProfile']!;
+      var homedir = envVars['HOME']!;
       historyDir = join(homedir, macPath);
     } else if (Platform.isLinux) {
-      var homedir = Platform.environment['UserProfile']!;
+      var homedir = envVars['HOME']!;
       historyDir = join(homedir, linuxPath);
     } else {
       throw Exception('Platform Not Supported');
@@ -61,7 +63,7 @@ abstract class Browser {
     }
   }
 
-  void bookmarksParser(String bookmarkPath) {}
+  Bookmark bookmarksParser(String bookmarkPath);
 
   // List<String> profiles({required String profileFile}) {
   //   if (!Directory(historyDir!).existsSync()) {
@@ -119,7 +121,7 @@ abstract class Browser {
     historyPaths ??= paths(profileFile: historyFile);
     var dir = Directory.systemTemp.createTempSync();
     var f = File("${dir.path}/$historyFile");
-    f.createSync();
+    await f.create();
     String tmpFile = f.path;
 
     List<History> histories = [];
@@ -204,8 +206,8 @@ class ChromiumBasedBrowser extends Browser {
         );
 
   @override
-  void bookmarksParser(String bookmarkPath) {
-    var bp = File(bookmarkPath).readAsStringSync();
-    print(bp);
+  Bookmark bookmarksParser(String bookmarkPath) {
+    var bm = jsonDecode(File(bookmarkPath).readAsStringSync());
+    return Bookmark.fromJson(bm['roots']);
   }
 }

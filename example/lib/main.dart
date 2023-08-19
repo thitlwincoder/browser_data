@@ -1,5 +1,5 @@
-import 'package:browser_history/browser_history.dart';
-import 'package:browser_history/model.dart';
+import 'package:browser_data/browser_data.dart';
+import 'package:browser_data/model.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:intl/intl.dart';
@@ -48,7 +48,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var broswer = BrowserHistory();
+  var broswer = BrowserData();
 
   List<History> histories = [];
 
