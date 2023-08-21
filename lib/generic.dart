@@ -119,8 +119,6 @@ abstract class Browser {
 
   Future<List<History>> fetchHistory({
     List<String>? historyPaths,
-    bool sort = true,
-    bool desc = false,
   }) async {
     historyPaths ??= paths(profileFile: historyFile);
 
@@ -144,6 +142,48 @@ abstract class Browser {
     }
 
     return histories;
+  }
+
+  Future<List<Download>> fetchDownloads({
+    List<String>? historyPaths,
+    bool sort = true,
+    bool desc = false,
+  }) async {
+    historyPaths ??= paths(profileFile: historyFile);
+
+    List<Download> downloads = [];
+
+    for (var historyPath in historyPaths) {
+      var dir = Directory.systemTemp.createTempSync();
+      var f = File("${dir.path}/$historyFile");
+      await f.create();
+      String tmpFile = f.path;
+
+      await FileCopy.copyFile(File(historyPath), tmpFile);
+
+      var conn =
+          sqlite3.open('file:$tmpFile?mode=ro&immutable=1&nolock=1', uri: true);
+      var result = conn.select(
+        """
+            SELECT
+                target_path,
+                start_time,
+                received_bytes,
+                total_bytes,
+                end_time,
+                tab_url,
+                original_mime_type
+            FROM downloads
+            LIMIT 20
+        """,
+      );
+      for (var e in result) {
+        downloads.add(Download.fromJson(e));
+      }
+      conn.dispose();
+    }
+
+    return downloads;
   }
 
   Future<Bookmark?> fetchBookmarks({

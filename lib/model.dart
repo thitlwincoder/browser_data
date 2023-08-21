@@ -115,3 +115,49 @@ class BookmarkData {
         "children": children?.map((x) => x.toJson()).toList(),
       };
 }
+
+List<Download> downloadFromJson(String str) =>
+    List<Download>.from(json.decode(str).map((x) => Download.fromJson(x)));
+
+String downloadToJson(List<Download> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+
+class Download {
+  final String targetPath;
+  final DateTime startTime;
+  final int receivedBytes;
+  final int totalBytes;
+  final DateTime endTime;
+  final String tabUrl;
+  final String originalMimeType;
+
+  Download({
+    required this.targetPath,
+    required this.startTime,
+    required this.receivedBytes,
+    required this.totalBytes,
+    required this.endTime,
+    required this.tabUrl,
+    required this.originalMimeType,
+  });
+
+  factory Download.fromJson(Map<String, dynamic> json) => Download(
+        targetPath: json["target_path"],
+        startTime: DateTime.fromMicrosecondsSinceEpoch(json["start_time"]),
+        receivedBytes: json["received_bytes"],
+        totalBytes: json["total_bytes"],
+        endTime: DateTime.fromMicrosecondsSinceEpoch(json["end_time"]),
+        tabUrl: json["tab_url"],
+        originalMimeType: json["original_mime_type"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "target_path": targetPath,
+        "start_time": startTime.toString(),
+        "received_bytes": receivedBytes,
+        "total_bytes": totalBytes,
+        "end_time": endTime.toString(),
+        "tab_url": tabUrl,
+        "original_mime_type": originalMimeType,
+      };
+}

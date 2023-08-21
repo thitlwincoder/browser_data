@@ -7,8 +7,12 @@ Future<void> main(List<String> args) async {
   var history = await chrome.fetchHistory();
 
   for (var e in history) {
-    JsonEncoder encoder = JsonEncoder.withIndent('  ');
-    String prettyprint = encoder.convert(e.toJson());
-    print(prettyprint);
+    formatPrint(e.toJson());
   }
+}
+
+void formatPrint(Map<String, dynamic> map) {
+  JsonEncoder encoder = JsonEncoder.withIndent('  ');
+  String prettyprint = encoder.convert(map);
+  return print(prettyprint);
 }
