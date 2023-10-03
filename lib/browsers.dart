@@ -1,47 +1,82 @@
-import 'package:browser_data/model.dart';
-
 import 'generic.dart';
+import 'model.dart';
 
 class Chromium extends ChromiumBasedBrowser {
-  Chromium({super.sqlite3Path})
-      : super(
-          name: 'Chromium',
-          profileSupport: true,
-          linuxPath: '.config/chromium',
-          windowsPath: r'AppData\Local\chromium\User Data',
-          aliases: ["chromiumhtm", "chromium-browser", "chromiumhtml"],
-        );
+  Chromium({super.sqlite3Path});
+
+  @override
+  String get name => 'Chromium';
+
+  @override
+  bool get profileSupport => true;
+
+  @override
+  String? get linuxPath => '.config/chromium';
+
+  @override
+  String? get windowsPath => r'AppData\Local\chromium\User Data';
+
+  @override
+  List<String>? get aliases {
+    return ["chromiumhtm", "chromium-browser", "chromiumhtml"];
+  }
 }
 
 class Chrome extends ChromiumBasedBrowser {
-  Chrome({super.sqlite3Path})
-      : super(
-          name: 'Chrome',
-          profileSupport: true,
-          linuxPath: '.config/google-chrome',
-          macPath: 'Library/Application Support/Google/Chrome/',
-          windowsPath: r'AppData\Local\Google\Chrome\User Data',
-          aliases: ["chromehtml", "google-chrome", "chromehtm"],
-        );
+  Chrome({super.sqlite3Path});
+
+  @override
+  String get name => 'Chrome';
+
+  @override
+  bool get profileSupport => true;
+
+  @override
+  String? get linuxPath => '.config/google-chrome';
+
+  @override
+  String? get macPath => 'Library/Application Support/Google/Chrome/';
+
+  @override
+  String? get windowsPath => r'AppData\Local\Google\Chrome\User Data';
+
+  @override
+  List<String>? get aliases {
+    return ["chromehtml", "google-chrome", "chromehtm"];
+  }
 }
 
 class Firefox extends Browser {
-  Firefox({
-    String? name,
-    String? linuxPath,
-    List<String>? aliases,
-    super.sqlite3Path,
-  }) : super(
-          name: name ?? 'Firefox',
-          profileSupport: true,
-          aliases: aliases ?? ['firefoxurl'],
-          historyFile: 'places.sqlite',
-          bookmarksFile: 'places.sqlite',
-          linuxPath: linuxPath ?? '.mozilla/firefox',
-          windowsPath: 'AppData/Roaming/Mozilla/Firefox/Profiles',
-          macPath: 'Library/Application Support/Firefox/Profiles/',
-        );
+  Firefox({super.sqlite3Path});
 
+  @override
+  String get name => 'Firefox';
+
+  @override
+  bool get profileSupport => true;
+
+  @override
+  List<String>? get aliases => ['firefoxurl'];
+
+  @override
+  String get historyFile => 'places.sqlite';
+
+  @override
+  String? get bookmarksFile => 'places.sqlite';
+
+  @override
+  String? get linuxPath => '.mozilla/firefox';
+
+  @override
+  String? get windowsPath => 'AppData/Roaming/Mozilla/Firefox/Profiles';
+
+  @override
+  String? get macPath => 'Library/Application Support/Firefox/Profiles/';
+
+  @override
+  Bookmark bookmarksParser(String bookmarkPath) {
+    throw UnimplementedError();
+  }
   // @override
   // Bookmark bookmarksParser(String bookmarkPath) {
   //   var bookmarkSQL = """
@@ -92,30 +127,35 @@ class Firefox extends Browser {
         LIMIT $limit
     """;
   }
-
-  @override
-  Bookmark bookmarksParser(String bookmarkPath) {
-    throw UnimplementedError();
-  }
 }
 
 class LibreWolf extends Firefox {
-  LibreWolf({super.sqlite3Path})
-      : super(
-          name: 'LibreWolf',
-          linuxPath: '.librewolf',
-          aliases: ['librewolfurl'],
-        );
+  LibreWolf({super.sqlite3Path});
+
+  @override
+  String get name => 'LibreWolf';
+
+  @override
+  String? get linuxPath => '.librewolf';
+
+  @override
+  List<String>? get aliases => ['librewolfurl'];
 }
 
 class Safari extends Browser {
-  Safari({super.sqlite3Path})
-      : super(
-          name: 'Safari',
-          macPath: 'Library/Safari',
-          profileSupport: false,
-          historyFile: 'History.db',
-        );
+  Safari({super.sqlite3Path});
+
+  @override
+  String get name => 'Safari';
+
+  @override
+  bool get profileSupport => false;
+
+  @override
+  String? get macPath => 'Library/Safari';
+
+  @override
+  String get historyFile => 'History.db';
 
   @override
   Bookmark bookmarksParser(String bookmarkPath) {
@@ -147,64 +187,108 @@ class Safari extends Browser {
 }
 
 class Edge extends ChromiumBasedBrowser {
-  Edge({super.sqlite3Path})
-      : super(
-          name: 'Edge',
-          profileSupport: true,
-          linuxPath: ".config/microsoft-edge-dev",
-          windowsPath: r"AppData\Local\Microsoft\Edge\User Data",
-          macPath: "Library/Application Support/Microsoft Edge",
-          aliases: [
-            "msedgehtm",
-            "msedge",
-            "microsoft-edge",
-            "microsoft-edge-dev"
-          ],
-        );
+  Edge({super.sqlite3Path});
+
+  @override
+  String get name => 'Edge';
+
+  @override
+  bool get profileSupport => true;
+
+  @override
+  String? get linuxPath => ".config/microsoft-edge-dev";
+
+  @override
+  String? get macPath => "Library/Application Support/Microsoft Edge";
+
+  @override
+  String? get windowsPath => r"AppData\Local\Microsoft\Edge\User Data";
+
+  @override
+  List<String>? get aliases {
+    return ["msedgehtm", "msedge", "microsoft-edge", "microsoft-edge-dev"];
+  }
 }
 
 class Opera extends ChromiumBasedBrowser {
-  Opera({super.sqlite3Path})
-      : super(
-          name: 'Opera',
-          profileSupport: false,
-          linuxPath: ".config/opera",
-          aliases: ["operastable", "opera-stable"],
-          windowsPath: r"AppData\Roaming\Opera Software\Opera Stable",
-          macPath: "Library/Application Support/com.operasoftware.Opera",
-        );
+  Opera({super.sqlite3Path});
+
+  @override
+  String get name => 'Opera';
+
+  @override
+  bool get profileSupport => false;
+
+  @override
+  String? get linuxPath => ".config/opera";
+
+  @override
+  String? get windowsPath => r"AppData\Roaming\Opera Software\Opera Stable";
+
+  @override
+  String? get macPath => "Library/Application Support/com.operasoftware.Opera";
 }
 
 class OperaGX extends ChromiumBasedBrowser {
-  OperaGX({super.sqlite3Path})
-      : super(
-          name: 'OperaGX',
-          profileSupport: false,
-          aliases: ["operagxstable", "operagx-stable"],
-          windowsPath: r"AppData\Roaming\Opera Software\Opera GX Stable",
-        );
+  OperaGX({super.sqlite3Path});
+
+  @override
+  String get name => 'OperaGX';
+
+  @override
+  bool get profileSupport => false;
+
+  @override
+  String? get windowsPath => r"AppData\Roaming\Opera Software\Opera GX Stable";
+
+  @override
+  List<String>? get aliases => ["operagxstable", "operagx-stable"];
 }
 
 class Brave extends ChromiumBasedBrowser {
-  Brave({super.sqlite3Path})
-      : super(
-          name: 'Brave',
-          profileSupport: true,
-          aliases: ["bravehtml"],
-          linuxPath: ".config/BraveSoftware/Brave-Browser",
-          macPath: "Library/Application Support/BraveSoftware/Brave-Browser",
-          windowsPath: r"AppData\Local\BraveSoftware\Brave-Browser\User Data",
-        );
+  Brave({super.sqlite3Path});
+
+  @override
+  String get name => 'Brave';
+
+  @override
+  bool get profileSupport => true;
+
+  @override
+  String? get linuxPath => ".config/BraveSoftware/Brave-Browser";
+
+  @override
+  String? get macPath {
+    return "Library/Application Support/BraveSoftware/Brave-Browser";
+  }
+
+  @override
+  String? get windowsPath {
+    return r"AppData\Local\BraveSoftware\Brave-Browser\User Data";
+  }
+
+  @override
+  List<String>? get aliases => ["bravehtml"];
 }
 
 class Vivaldi extends ChromiumBasedBrowser {
-  Vivaldi({super.sqlite3Path})
-      : super(
-          name: 'Vivaldi',
-          profileSupport: true,
-          aliases: ["vivaldi-stable", "vivaldistable"],
-          linuxPath: ".config/vivaldi",
-          macPath: "Library/Application Support/Vivaldi",
-          windowsPath: r"AppData\Local\Vivaldi\User Data",
-        );
+  Vivaldi({super.sqlite3Path});
+
+  @override
+  String get name => 'Vivaldi';
+
+  @override
+  bool get profileSupport => true;
+
+  @override
+  String? get linuxPath => ".config/vivaldi";
+
+  @override
+  String? get macPath => "Library/Application Support/Vivaldi";
+
+  @override
+  String? get windowsPath => r"AppData\Local\Vivaldi\User Data";
+
+  @override
+  List<String>? get aliases => ["vivaldi-stable", "vivaldistable"];
 }

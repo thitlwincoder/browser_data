@@ -28,7 +28,9 @@ class History {
         visitDuration: json["visit_duration"],
         title: json["title"],
         visitCount: json["visit_count"],
-        lastVisitTime: DateTime.parse(json["last_visit_time"]),
+        lastVisitTime: json["last_visit_time"] == null
+            ? null
+            : DateTime.parse(json["last_visit_time"]),
       );
 
   Map<String, dynamic> toJson() => {

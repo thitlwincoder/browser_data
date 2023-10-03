@@ -1,37 +1,61 @@
-import 'dart:ffi';
-import 'dart:typed_data';
+import 'dart:io';
 
-// void getBrowsers() {}
+import 'package:browser_data/browsers.dart';
+import 'package:logger/logger.dart';
+import 'package:win32_registry/win32_registry.dart';
 
-// String _defaultBrowserWin() {
-//   final key = Registry.openPath(
-//     RegistryHive.currentUser,
-//     path:
-//         r'Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice',
-//   );
-//   var progId = key.getValueAsString('ProgId');
-//   if (progId == null) {
-//     throw Exception('Could not determine default browser');
-//   }
+import 'generic.dart';
 
-//   return progId.toLowerCase();
-// }
+String _defaultBrowserWin() {
+  final key = Registry.openPath(
+    RegistryHive.currentUser,
+    path:
+        r'Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice',
+  );
+  var progId = key.getValueAsString('ProgId');
+  if (progId == null) {
+    throw Exception('Could not determine default browser');
+  }
 
-// String? defaultBrowser() {
-//   String? browser;
-//   if (Platform.isWindows) {
-//     browser = _defaultBrowserWin();
-//   } else {
-//     log('Default browser feature not supported on this OS');
-//     return null;
-//   }
+  return progId.toLowerCase();
+}
 
-//   var allBrowsers = getBrowsers();
-//   // for (var b in allBrowsers) {
+Browser? defaultBrowser({String? sqlite3Path}) {
+  var logger = Logger();
 
-//   // }
-//   return null;
-// }
+  String? browser;
+  if (Platform.isWindows) {
+    browser = _defaultBrowserWin();
+  } else {
+    logger.w('Default browser feature not supported on this OS');
+    return null;
+  }
+
+  browser = browser.toLowerCase();
+
+  var browsers = [
+    Chromium(sqlite3Path: sqlite3Path),
+    Chrome(sqlite3Path: sqlite3Path),
+    Firefox(sqlite3Path: sqlite3Path),
+    LibreWolf(sqlite3Path: sqlite3Path),
+    Safari(sqlite3Path: sqlite3Path),
+    Edge(sqlite3Path: sqlite3Path),
+    Opera(sqlite3Path: sqlite3Path),
+    OperaGX(sqlite3Path: sqlite3Path),
+    Brave(sqlite3Path: sqlite3Path),
+    Vivaldi(sqlite3Path: sqlite3Path),
+  ];
+
+  for (var b in browsers) {
+    var aliases = b.aliases ?? [];
+
+    if (b.name == browser || aliases.contains(browser)) {
+      return b;
+    }
+  }
+  logger.w('Current default browser is not supported');
+  return null;
+}
 
 extension StringExtension on String {
   String sub(String input) {
@@ -52,14 +76,5 @@ extension StringExtension on String {
       var p = length + value;
       return substring(p, p + 1);
     }
-  }
-}
-
-extension Uint8ListBlobConversionX on Uint8List {
-  /// Alternative to [allocatePointer] from win32, which accepts an allocator
-  Pointer<Uint8> allocatePointerWith(Allocator allocator) {
-    final blob = allocator<Uint8>(length);
-    blob.asTypedList(length).setAll(0, this);
-    return blob;
   }
 }

@@ -11,36 +11,28 @@ import 'package:sqlite3/sqlite3.dart';
 import 'model.dart';
 
 abstract class Browser {
-  final String? name;
+  String get name;
 
-  final bool profileSupport;
+  String? macPath;
+  String? linuxPath;
+  String? windowsPath;
 
-  final List<String>? aliases;
+  bool get profileSupport;
 
-  final List<String> profileDirPrefixes;
+  List<String>? aliases;
 
-  final String? macPath;
-  final String? linuxPath;
-  final String? windowsPath;
+  final List<String>? profileDirPrefixes;
 
-  final String historyFile;
+  String get historyFile;
 
-  final String? bookmarksFile;
+  String? bookmarksFile;
 
   String? historyDir;
 
   final String? sqlite3Path;
 
   Browser({
-    required this.name,
-    required this.profileSupport,
-    this.aliases,
-    this.profileDirPrefixes = const [],
-    this.macPath,
-    this.linuxPath,
-    this.windowsPath,
-    required this.historyFile,
-    this.bookmarksFile,
+    this.profileDirPrefixes,
     this.historyDir,
     this.sqlite3Path,
   }) {
@@ -50,20 +42,28 @@ abstract class Browser {
 
     Map<String, String> envVars = Platform.environment;
     if (Platform.isWindows) {
+      assert(windowsPath != null);
+
       var homedir = envVars['UserProfile']!;
       historyDir = join(homedir, windowsPath);
     } else if (Platform.isMacOS) {
+      assert(macPath != null);
+
       var homedir = envVars['HOME']!;
       historyDir = join(homedir, macPath);
     } else if (Platform.isLinux) {
+      assert(linuxPath != null);
+
       var homedir = envVars['HOME']!;
       historyDir = join(homedir, linuxPath);
     } else {
-      throw Exception('Platform Not Supported');
+      throw UnimplementedError();
     }
 
-    if (profileSupport && profileDirPrefixes.isEmpty) {
-      profileDirPrefixes.add('*');
+    var prefixes = profileDirPrefixes ?? [];
+
+    if (profileSupport && prefixes.isEmpty) {
+      prefixes.add('*');
     }
   }
 
@@ -150,6 +150,7 @@ abstract class Browser {
       bookmarksFile != null,
       "Bookmarks are not supported for $name browser",
     );
+
     var bookmarkPaths = paths(profileFile: bookmarksFile!);
 
     for (var bookmarkPath in bookmarkPaths) {
@@ -172,45 +173,21 @@ abstract class Browser {
     }
     return null;
   }
-
-  bool isSupported() {
-    String? path;
-
-    if (Platform.isLinux) {
-      path = linuxPath;
-    }
-    if (Platform.isWindows) {
-      path = windowsPath;
-    }
-    if (Platform.isMacOS) {
-      path = macPath;
-    }
-
-    return path != null;
-  }
 }
 
-class ChromiumBasedBrowser extends Browser {
+abstract class ChromiumBasedBrowser extends Browser {
   ChromiumBasedBrowser({
-    required String name,
-    String? macPath,
-    String? linuxPath,
-    required String? windowsPath,
     String? sqlite3Path,
-    required List<String>? aliases,
-    required bool profileSupport,
   }) : super(
-          name: name,
-          aliases: aliases,
-          macPath: macPath,
-          linuxPath: linuxPath,
-          windowsPath: windowsPath,
           sqlite3Path: sqlite3Path,
-          profileSupport: profileSupport,
-          historyFile: 'History',
-          bookmarksFile: 'Bookmarks',
           profileDirPrefixes: ["Default*", "Profile*"],
         );
+
+  @override
+  String get historyFile => 'History';
+
+  @override
+  String? get bookmarksFile => 'Bookmarks';
 
   @override
   Bookmark bookmarksParser(String bookmarkPath) {

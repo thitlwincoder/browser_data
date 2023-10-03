@@ -3,11 +3,17 @@ import 'dart:convert';
 import 'package:browser_data/browser_data.dart';
 
 Future<void> main(List<String> args) async {
-  var chrome = Chrome(sqlite3Path: './sqlite3.dll');
-  var outputs = await chrome.fetchHistory(limit: 2);
-  for (var e in outputs) {
-    formatPrint(e.toJson());
-  }
+  // get default browser from device
+  var browser = defaultBrowser(sqlite3Path: './sqlite3.dll');
+
+  // get specific browser
+  browser = Chromium(sqlite3Path: './sqlite3.dll');
+
+  // get history from this browser
+  var histories = await browser.fetchHistory(limit: 2);
+
+  // get bookmarks from this browser
+  var bookmarks = await browser.fetchBookmarks();
 }
 
 void formatPrint(Map<String, dynamic> map) {

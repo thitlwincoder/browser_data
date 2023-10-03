@@ -50,23 +50,29 @@ flutter packages get
 
 Before start you must need to download [sqlite3.dll](https://github.com/thitlwincoder/browser_data/blob/main/example/sqlite3.dll) for use this package.
 
+If you want to get `default` browser from device :
+
 ```dart
 import 'package:browser_data/browser_data.dart';
 
-var chrome = Chrome(sqlite3Path: './sqlite3.dll');
+var browser = defaultBrowser(sqlite3Path: './sqlite3.dll');
+```
+You can use also with a specific browser.
+```dart
+var browser = Chrome(sqlite3Path: './sqlite3.dll');
 ```
 
-To get `history` from a specific browser:
+To get `history` from a browser.
 You can limit history count.
 
 ```dart
-var outputs = await chrome.fetchHistory(limit: 10);
+var outputs = await browser.fetchHistory(limit: 10);
 ```
 
-To get `bookmarks` from a specific browser:
+To get `bookmarks` from a browser.
 
 ```dart
-var outputs = await chrome.fetchBookmarks();
+var outputs = await browser.fetchBookmarks();
 ```
 ## Contribution
 Feel free to file an [issue](https://github.com/thitlwincoder/browser_data/issues/new) if you find a problem or make pull requests.

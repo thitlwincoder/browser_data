@@ -1,8 +1,12 @@
+## 0.0.3
+
+- Get default browser from device.
+
 ## 0.0.2
 
-- add example
+- Add example.
 
 ## 0.0.1
 
 - Initial version.
-- Include Download & Bookmark
+- Include download & bookmark.
