@@ -48,7 +48,7 @@ flutter packages get
 ```
 ## Usage
 
-Before start you must need to download [sqlite3.dll](https://github.com/thitlwincoder/browser_data/blob/main/bin/sqlite3.dll) for use this package.
+Before start you must need to download [sqlite3.dll](https://github.com/thitlwincoder/browser_data/blob/main/example/sqlite3.dll) for use this package.
 
 ```dart
 import 'package:browser_data/browser_data.dart';
