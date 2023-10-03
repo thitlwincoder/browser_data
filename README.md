@@ -7,7 +7,7 @@
 <br>
 [![Uploaded By](https://img.shields.io/badge/uploaded%20by-thitlwincoder-blue)](https://github.com/thitlwincoder)
 
-`browser-data` is a dart package to retrieve browser's data.
+`browser_data` is a dart package to retrieve browser's data.
 
 ## Features
 - [x] History
