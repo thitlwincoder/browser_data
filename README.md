@@ -1,13 +1,13 @@
 # browser_data
 
 [![pub package](https://img.shields.io/pub/v/browser_data.svg?logo=dart&logoColor=00b9fc)](https://pub.dev/packages/browser_data)
-[![Last Commits](https://img.shields.io/github/last-commit/thitlwincoder/browser_data?logo=git&logoColor=white)](https://github.com/thitlwincoder/browser_data/commits/master)
+[![Last Commits](https://img.shields.io/github/last-commit/thitlwincoder/browser_data?logo=git&logoColor=white)](https://github.com/thitlwincoder/browser_data/commits/main)
 [![GitHub repo size](https://img.shields.io/github/repo-size/thitlwincoder/browser_data)](https://github.com/thitlwincoder/browser_data)
-[![License](https://img.shields.io/github/license/thitlwincoder/browser_data?logo=open-source-initiative&logoColor=green)](https://github.com/thitlwincoder/browser_data/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/thitlwincoder/browser_data?logo=open-source-initiative&logoColor=green)](https://github.com/thitlwincoder/browser_data/blob/main/LICENSE)
 <br>
 [![Uploaded By](https://img.shields.io/badge/uploaded%20by-thitlwincoder-blue)](https://github.com/thitlwincoder)
 
-`browser-data` is a dart package to retrieve (almost) any browser's history on (almost) any platform.
+`browser-data` is a dart package to retrieve browser's data.
 
 ## Features
 - [x] History
