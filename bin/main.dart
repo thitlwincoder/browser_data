@@ -4,9 +4,8 @@ import 'package:browser_data/browsers.dart';
 
 Future<void> main(List<String> args) async {
   var chrome = Chrome(sqlite3Path: './sqlite3.dll');
-  var history = await chrome.fetchHistory();
-
-  for (var e in history) {
+  var outputs = await chrome.fetchDownloads();
+  for (var e in outputs) {
     formatPrint(e.toJson());
   }
 }

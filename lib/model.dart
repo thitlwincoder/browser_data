@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 History historyFromJson(String str) => History.fromJson(json.decode(str));
 
@@ -159,5 +160,35 @@ class Download {
         "end_time": endTime.toString(),
         "tab_url": tabUrl,
         "original_mime_type": originalMimeType,
+      };
+}
+
+List<Password> passwordFromJson(String str) =>
+    List<Password>.from(json.decode(str).map((x) => Password.fromJson(x)));
+
+String passwordToJson(List<Password> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+
+class Password {
+  final String url;
+  final String username;
+  final Uint8List password;
+
+  Password({
+    required this.url,
+    required this.username,
+    required this.password,
+  });
+
+  factory Password.fromJson(Map<String, dynamic> json) => Password(
+        url: json["origin_url"],
+        username: json["username_value"],
+        password: json["password_value"],
+      );
+
+  Map<String, dynamic> toJson() => {
+        "origin_url": url,
+        "username_value": username,
+        "password_value": String.fromCharCodes(password),
       };
 }

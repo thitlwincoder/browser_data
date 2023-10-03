@@ -30,6 +30,7 @@ abstract class Browser {
   final String historyFile;
 
   final String? bookmarksFile;
+  final String? passwordsFile;
 
   String? historyDir;
 
@@ -46,6 +47,7 @@ abstract class Browser {
     required this.historySQL,
     required this.historyFile,
     this.bookmarksFile,
+    this.passwordsFile,
     this.historyDir,
     this.sqlite3Path,
   }) {
@@ -109,13 +111,13 @@ abstract class Browser {
     ];
   }
 
-  // Future<void> historyProfiles({required List<String> profileDirs}) {
-  //   var historyPaths = [
-  //     for (var profileDir in profileDirs)
-  //       historyPathProfile(profileDir: profileDir),
-  //   ];
-  //   return fetchHistory(historyPaths: historyPaths);
-  // }
+  Future<void> historyProfiles({required List<String> profileDirs}) {
+    var historyPaths = [
+      for (var profileDir in profileDirs)
+        historyPathProfile(profileDir: profileDir),
+    ];
+    return fetchHistory(historyPaths: historyPaths);
+  }
 
   Future<List<History>> fetchHistory({
     List<String>? historyPaths,
@@ -125,7 +127,10 @@ abstract class Browser {
     List<History> histories = [];
 
     for (var historyPath in historyPaths) {
-      var dir = Directory.systemTemp.createTempSync();
+      var size = await File(historyPath).length();
+      if (size == 0) continue;
+
+      var dir = await Directory.systemTemp.createTemp();
       var f = File("${dir.path}/$historyFile");
       await f.create();
       String tmpFile = f.path;
@@ -154,6 +159,14 @@ abstract class Browser {
     List<Download> downloads = [];
 
     for (var historyPath in historyPaths) {
+      var file = File(historyPath);
+
+      var isExists = await file.exists();
+      if (!isExists) continue;
+
+      var size = await file.length();
+      if (size == 0) continue;
+
       var dir = Directory.systemTemp.createTempSync();
       var f = File("${dir.path}/$historyFile");
       await f.create();
@@ -177,6 +190,7 @@ abstract class Browser {
             LIMIT 20
         """,
       );
+      print(result);
       for (var e in result) {
         downloads.add(Download.fromJson(e));
       }
@@ -197,19 +211,40 @@ abstract class Browser {
     var bookmarkPaths = paths(profileFile: bookmarksFile!);
 
     for (var bookmarkPath in bookmarkPaths) {
+      var file = File(bookmarkPath);
+
+      var isExists = await file.exists();
+      if (!isExists) continue;
+
+      var size = await file.length();
+      if (size == 0) continue;
+
       var dir = Directory.systemTemp.createTempSync();
       var f = File("${dir.path}/$bookmarksFile");
       await f.create();
       String tmpFile = f.path;
-
-      var isExists = await File(bookmarkPath).exists();
-      if (!isExists) return null;
 
       await FileCopy.copyFile(File(bookmarkPath), tmpFile);
 
       return bookmarksParser(tmpFile);
     }
     return null;
+  }
+
+  bool isSupported() {
+    String? path;
+
+    if (Platform.isLinux) {
+      path = linuxPath;
+    }
+    if (Platform.isWindows) {
+      path = windowsPath;
+    }
+    if (Platform.isMacOS) {
+      path = macPath;
+    }
+
+    return path != null;
   }
 }
 
@@ -232,6 +267,7 @@ class ChromiumBasedBrowser extends Browser {
           profileSupport: profileSupport,
           historyFile: 'History',
           bookmarksFile: 'Bookmarks',
+          passwordsFile: 'Login Data',
           profileDirPrefixes: ["Default*", "Profile*"],
           historySQL: """
             SELECT

@@ -46,7 +46,8 @@ class Firefox extends Browser {
             datetime(
                 visit_date/1000000, 'unixepoch', 'localtime'
             ) AS 'visit_time',
-            url
+            url,
+            moz_places.title
         FROM
             moz_historyvisits
         INNER JOIN
@@ -74,7 +75,7 @@ class Firefox extends Browser {
             WHERE
                 moz_bookmarks.dateAdded IS NOT NULL AND url LIKE 'http%'
                 AND moz_bookmarks.title IS NOT NULL
-        """;
+       """;
 
     var conn = sqlite3.open('file:$bookmarkPath?mode=ro', uri: true);
     var result = conn.select(bookmarkSQL);
@@ -111,7 +112,8 @@ class Safari extends Browser {
             datetime(
                 visit_time + 978307200, 'unixepoch', 'localtime'
             ) as visit_time,
-            url
+            url,
+            title
         FROM
             history_visits
         INNER JOIN

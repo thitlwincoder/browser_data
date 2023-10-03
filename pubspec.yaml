@@ -15,7 +15,8 @@ dependencies:
   sqlite3: ^2.1.0
   win32_registry: ^1.1.1
 
-  console: ^4.1.0
+  win32: ^5.0.8
+  ffi: ^2.1.0
 
 dev_dependencies:
   lints: ^2.0.0
