@@ -1,22 +1,22 @@
 name: browser_data
-description: A sample command-line application.
-version: 1.0.0
+description: dart package to retrieve browser's data.
+version: 0.0.1
 repository: https://github.com/thitlwincoder/browser_data
 environment:
   sdk: ^3.0.6
 
 dependencies:
-  file: ^6.0.0
+  file: ^7.0.0
   file_copy: ^1.0.7
 
   path: ^1.8.3
-  path_provider: ^2.0.15
+  path_provider: ^2.1.1
 
   sqlite3: ^2.1.0
-  win32_registry: ^1.1.1
+  win32_registry: ^1.1.2
 
-  win32: ^5.0.8
+  win32: ^5.0.9
   ffi: ^2.1.0
 
 dev_dependencies:
-  lints: ^2.0.0
+  lints: ^2.1.1

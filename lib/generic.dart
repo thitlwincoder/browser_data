@@ -1,6 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-// String _paths() {}
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi';
@@ -26,11 +23,9 @@ abstract class Browser {
   final String? linuxPath;
   final String? windowsPath;
 
-  final String historySQL;
   final String historyFile;
 
   final String? bookmarksFile;
-  final String? passwordsFile;
 
   String? historyDir;
 
@@ -44,10 +39,8 @@ abstract class Browser {
     this.macPath,
     this.linuxPath,
     this.windowsPath,
-    required this.historySQL,
     required this.historyFile,
     this.bookmarksFile,
-    this.passwordsFile,
     this.historyDir,
     this.sqlite3Path,
   }) {
@@ -75,6 +68,8 @@ abstract class Browser {
   }
 
   Bookmark bookmarksParser(String bookmarkPath);
+
+  String historySQL({int limit = 20});
 
   List<String> profiles({required String profileFile}) {
     if (!Directory(historyDir!).existsSync()) {
@@ -121,6 +116,7 @@ abstract class Browser {
 
   Future<List<History>> fetchHistory({
     List<String>? historyPaths,
+    int limit = 20,
   }) async {
     historyPaths ??= paths(profileFile: historyFile);
 
@@ -139,7 +135,7 @@ abstract class Browser {
 
       var conn =
           sqlite3.open('file:$tmpFile?mode=ro&immutable=1&nolock=1', uri: true);
-      var result = conn.select(historySQL);
+      var result = conn.select(historySQL(limit: limit));
       for (var e in result) {
         histories.add(History.fromJson(e));
       }
@@ -149,61 +145,7 @@ abstract class Browser {
     return histories;
   }
 
-  Future<List<Download>> fetchDownloads({
-    List<String>? historyPaths,
-    bool sort = true,
-    bool desc = false,
-  }) async {
-    historyPaths ??= paths(profileFile: historyFile);
-
-    List<Download> downloads = [];
-
-    for (var historyPath in historyPaths) {
-      var file = File(historyPath);
-
-      var isExists = await file.exists();
-      if (!isExists) continue;
-
-      var size = await file.length();
-      if (size == 0) continue;
-
-      var dir = Directory.systemTemp.createTempSync();
-      var f = File("${dir.path}/$historyFile");
-      await f.create();
-      String tmpFile = f.path;
-
-      await FileCopy.copyFile(File(historyPath), tmpFile);
-
-      var conn =
-          sqlite3.open('file:$tmpFile?mode=ro&immutable=1&nolock=1', uri: true);
-      var result = conn.select(
-        """
-            SELECT
-                target_path,
-                start_time,
-                received_bytes,
-                total_bytes,
-                end_time,
-                tab_url,
-                original_mime_type
-            FROM downloads
-            LIMIT 20
-        """,
-      );
-      print(result);
-      for (var e in result) {
-        downloads.add(Download.fromJson(e));
-      }
-      conn.dispose();
-    }
-
-    return downloads;
-  }
-
-  Future<Bookmark?> fetchBookmarks({
-    bool sort = true,
-    bool desc = false,
-  }) async {
+  Future<Bookmark?> fetchBookmarks() async {
     assert(
       bookmarksFile != null,
       "Bookmarks are not supported for $name browser",
@@ -267,9 +209,18 @@ class ChromiumBasedBrowser extends Browser {
           profileSupport: profileSupport,
           historyFile: 'History',
           bookmarksFile: 'Bookmarks',
-          passwordsFile: 'Login Data',
           profileDirPrefixes: ["Default*", "Profile*"],
-          historySQL: """
+        );
+
+  @override
+  Bookmark bookmarksParser(String bookmarkPath) {
+    var bm = jsonDecode(File(bookmarkPath).readAsStringSync());
+    return Bookmark.fromJson(bm['roots']);
+  }
+
+  @override
+  String historySQL({int limit = 20}) {
+    return """
             SELECT
                 datetime(
                     visits.visit_time/1000000-11644473600, 'unixepoch', 'localtime'
@@ -287,13 +238,7 @@ class ChromiumBasedBrowser extends Browser {
                 visits.visit_duration > 0
             ORDER BY
                 visit_time DESC
-            LIMIT 20
-        """,
-        );
-
-  @override
-  Bookmark bookmarksParser(String bookmarkPath) {
-    var bm = jsonDecode(File(bookmarkPath).readAsStringSync());
-    return Bookmark.fromJson(bm['roots']);
+            LIMIT $limit
+        """;
   }
 }

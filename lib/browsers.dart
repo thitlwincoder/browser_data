@@ -1,5 +1,4 @@
 import 'package:browser_data/model.dart';
-import 'package:sqlite3/sqlite3.dart';
 
 import 'generic.dart';
 
@@ -41,7 +40,41 @@ class Firefox extends Browser {
           linuxPath: linuxPath ?? '.mozilla/firefox',
           windowsPath: 'AppData/Roaming/Mozilla/Firefox/Profiles',
           macPath: 'Library/Application Support/Firefox/Profiles/',
-          historySQL: """
+        );
+
+  // @override
+  // Bookmark bookmarksParser(String bookmarkPath) {
+  //   var bookmarkSQL = """
+  //           SELECT
+  //               datetime(
+  //                   moz_bookmarks.dateAdded/1000000,'unixepoch','localtime'
+  //               ) AS added_time,
+  //               url, moz_bookmarks.title, moz_folder.title
+  //           FROM
+  //               moz_bookmarks JOIN moz_places, moz_bookmarks as moz_folder
+  //           ON
+  //               moz_bookmarks.fk = moz_places.id
+  //               AND moz_bookmarks.parent = moz_folder.id
+  //           WHERE
+  //               moz_bookmarks.dateAdded IS NOT NULL AND url LIKE 'http%'
+  //               AND moz_bookmarks.title IS NOT NULL
+  //      """;
+
+  //   var conn = sqlite3.open('file:$bookmarkPath?mode=ro', uri: true);
+  //   var result = conn.select(bookmarkSQL);
+
+  //   throw UnimplementedError();
+  //   // for (var e in result) {
+  //   //   bookmarks.add(Bookmark.fromJson(e));
+  //   // }
+  //   // conn.dispose();
+
+  //   // return Bookmark(bookmarkBar: bookmarkBar, other: other, synced: synced);
+  // }
+
+  @override
+  String historySQL({int limit = 20}) {
+    return """
         SELECT
             datetime(
                 visit_date/1000000, 'unixepoch', 'localtime'
@@ -56,38 +89,13 @@ class Firefox extends Browser {
             moz_historyvisits.place_id = moz_places.id
         WHERE
             visit_date IS NOT NULL AND url LIKE 'http%' AND title IS NOT NULL
-    """,
-        );
+        LIMIT $limit
+    """;
+  }
 
   @override
   Bookmark bookmarksParser(String bookmarkPath) {
-    var bookmarkSQL = """
-            SELECT
-                datetime(
-                    moz_bookmarks.dateAdded/1000000,'unixepoch','localtime'
-                ) AS added_time,
-                url, moz_bookmarks.title, moz_folder.title
-            FROM
-                moz_bookmarks JOIN moz_places, moz_bookmarks as moz_folder
-            ON
-                moz_bookmarks.fk = moz_places.id
-                AND moz_bookmarks.parent = moz_folder.id
-            WHERE
-                moz_bookmarks.dateAdded IS NOT NULL AND url LIKE 'http%'
-                AND moz_bookmarks.title IS NOT NULL
-       """;
-
-    var conn = sqlite3.open('file:$bookmarkPath?mode=ro', uri: true);
-    var result = conn.select(bookmarkSQL);
-
-    // TODO: implement bookmarksParser
     throw UnimplementedError();
-    // for (var e in result) {
-    //   bookmarks.add(Bookmark.fromJson(e));
-    // }
-    // conn.dispose();
-
-    // return Bookmark(bookmarkBar: bookmarkBar, other: other, synced: synced);
   }
 }
 
@@ -107,7 +115,18 @@ class Safari extends Browser {
           macPath: 'Library/Safari',
           profileSupport: false,
           historyFile: 'History.db',
-          historySQL: """
+        );
+
+  @override
+  Bookmark bookmarksParser(String bookmarkPath) {
+    throw UnimplementedError();
+  }
+
+  @override
+  String historySQL({
+    int limit = 20,
+  }) {
+    return """
         SELECT
             datetime(
                 visit_time + 978307200, 'unixepoch', 'localtime'
@@ -122,13 +141,8 @@ class Safari extends Browser {
             history_items.id = history_visits.history_item
         ORDER BY
             visit_time DESC
-    """,
-        );
-
-  @override
-  Bookmark bookmarksParser(String bookmarkPath) {
-    // TODO: implement bookmarksParser
-    throw UnimplementedError();
+        LIMIT $limit
+    """;
   }
 }
 
