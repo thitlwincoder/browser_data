@@ -7,7 +7,7 @@
 <br>
 [![Uploaded By](https://img.shields.io/badge/uploaded%20by-thitlwincoder-blue)](https://github.com/thitlwincoder)
 
-`browser_data` is a dart package to retrieve browser's data.
+`browser_data` is a dart package to retrieve the browser's data.
 
 ## Features
 - [x] History
@@ -37,7 +37,7 @@ dependencies:
   browser_data: latest
 ```
 
-Next we need to install this
+Next, we need to install this
 
 ```sh
 # Dart
@@ -48,22 +48,22 @@ flutter packages get
 ```
 ## Usage
 
-Before start you must need to download [sqlite3.dll](https://github.com/thitlwincoder/browser_data/blob/main/example/sqlite3.dll) for use this package.
+Before starting, you must download [sqlite3.dll](https://github.com/thitlwincoder/browser_data/blob/main/example/sqlite3.dll) for this package.
 
-If you want to get `default` browser from device :
+If you want to get the `default` browser from the device :
 
 ```dart
 import 'package:browser_data/browser_data.dart';
 
 var browser = defaultBrowser(sqlite3Path: './sqlite3.dll');
 ```
-You can use also with a specific browser.
+You can also use it with a specific browser.
 ```dart
 var browser = Chrome(sqlite3Path: './sqlite3.dll');
 ```
 
 To get `history` from a browser.
-You can limit history count.
+You can limit the history count.
 
 ```dart
 var outputs = await browser.fetchHistory(limit: 10);
@@ -78,3 +78,6 @@ var outputs = await browser.fetchBookmarks();
 Feel free to file an [issue](https://github.com/thitlwincoder/browser_data/issues/new) if you find a problem or make pull requests.
 
 All contributions are welcome :)
+
+## Disclaimer
+I just wanted to let you know that I am not responsible for any misuse. This package is only for educational purposes.
