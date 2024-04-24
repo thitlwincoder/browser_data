@@ -177,9 +177,8 @@ abstract class Browser {
 
 abstract class ChromiumBasedBrowser extends Browser {
   ChromiumBasedBrowser({
-    String? sqlite3Path,
+    super.sqlite3Path,
   }) : super(
-          sqlite3Path: sqlite3Path,
           profileDirPrefixes: ["Default*", "Profile*"],
         );
 

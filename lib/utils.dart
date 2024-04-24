@@ -6,6 +6,24 @@ import 'package:win32_registry/win32_registry.dart';
 
 import 'generic.dart';
 
+String? _defaultBrowserLinux() {
+  try {
+    var rawResult = Process.runSync(
+      'xdg-settings',
+      ['get', 'default-web-browser'],
+    );
+
+    return rawResult.stdout
+        .toString()
+        .trim()
+        .toLowerCase()
+        .replaceAll('.desktop', '');
+  } catch (e) {
+    Logger().d('Could not determine default browser');
+    return null;
+  }
+}
+
 String _defaultBrowserWin() {
   final key = Registry.openPath(
     RegistryHive.currentUser,
@@ -26,8 +44,15 @@ Browser? defaultBrowser({String? sqlite3Path}) {
   String? browser;
   if (Platform.isWindows) {
     browser = _defaultBrowserWin();
+  } else if (Platform.isLinux) {
+    browser = _defaultBrowserLinux();
   } else {
     logger.w('Default browser feature not supported on this OS');
+    return null;
+  }
+
+  if (browser == null) {
+    logger.w('No default browser found');
     return null;
   }
 
@@ -49,10 +74,11 @@ Browser? defaultBrowser({String? sqlite3Path}) {
   for (var b in browsers) {
     var aliases = b.aliases ?? [];
 
-    if (b.name == browser || aliases.contains(browser)) {
+    if (b.name.toLowerCase() == browser || aliases.contains(browser)) {
       return b;
     }
   }
+
   logger.w('Current default browser is not supported');
   return null;
 }

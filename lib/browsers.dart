@@ -14,7 +14,7 @@ class Chromium extends ChromiumBasedBrowser {
   String? get linuxPath => '.config/chromium';
 
   @override
-  String? get windowsPath => r'AppData\Local\chromium\User Data';
+  String? get windowsPath => 'AppData/Local/chromium/User Data';
 
   @override
   List<String>? get aliases {
@@ -38,7 +38,7 @@ class Chrome extends ChromiumBasedBrowser {
   String? get macPath => 'Library/Application Support/Google/Chrome/';
 
   @override
-  String? get windowsPath => r'AppData\Local\Google\Chrome\User Data';
+  String? get windowsPath => 'AppData/Local/Google/Chrome/User Data';
 
   @override
   List<String>? get aliases {
@@ -74,6 +74,27 @@ class Firefox extends Browser {
   String? get macPath => 'Library/Application Support/Firefox/Profiles/';
 
   @override
+  String historySQL({int limit = 20}) {
+    return """
+        SELECT
+            datetime(
+                visit_date/1000000, 'unixepoch', 'localtime'
+            ) AS 'visit_time',
+            url,
+            moz_places.title
+        FROM
+            moz_historyvisits
+        INNER JOIN
+            moz_places
+        ON
+            moz_historyvisits.place_id = moz_places.id
+        WHERE
+            visit_date IS NOT NULL AND url LIKE 'http%' AND title IS NOT NULL
+        LIMIT $limit
+    """;
+  }
+
+  @override
   Bookmark bookmarksParser(String bookmarkPath) {
     throw UnimplementedError();
   }
@@ -106,27 +127,6 @@ class Firefox extends Browser {
 
   //   // return Bookmark(bookmarkBar: bookmarkBar, other: other, synced: synced);
   // }
-
-  @override
-  String historySQL({int limit = 20}) {
-    return """
-        SELECT
-            datetime(
-                visit_date/1000000, 'unixepoch', 'localtime'
-            ) AS 'visit_time',
-            url,
-            moz_places.title
-        FROM
-            moz_historyvisits
-        INNER JOIN
-            moz_places
-        ON
-            moz_historyvisits.place_id = moz_places.id
-        WHERE
-            visit_date IS NOT NULL AND url LIKE 'http%' AND title IS NOT NULL
-        LIMIT $limit
-    """;
-  }
 }
 
 class LibreWolf extends Firefox {
@@ -202,7 +202,7 @@ class Edge extends ChromiumBasedBrowser {
   String? get macPath => "Library/Application Support/Microsoft Edge";
 
   @override
-  String? get windowsPath => r"AppData\Local\Microsoft\Edge\User Data";
+  String? get windowsPath => 'AppData/Local/Microsoft/Edge/User Data';
 
   @override
   List<String>? get aliases {
@@ -223,7 +223,7 @@ class Opera extends ChromiumBasedBrowser {
   String? get linuxPath => ".config/opera";
 
   @override
-  String? get windowsPath => r"AppData\Roaming\Opera Software\Opera Stable";
+  String? get windowsPath => 'AppData/Roaming/Opera Software/Opera Stable';
 
   @override
   String? get macPath => "Library/Application Support/com.operasoftware.Opera";
@@ -264,7 +264,7 @@ class Brave extends ChromiumBasedBrowser {
 
   @override
   String? get windowsPath {
-    return r"AppData\Local\BraveSoftware\Brave-Browser\User Data";
+    return 'AppData/Local/BraveSoftware/Brave-Browser/User Data';
   }
 
   @override
@@ -287,8 +287,24 @@ class Vivaldi extends ChromiumBasedBrowser {
   String? get macPath => "Library/Application Support/Vivaldi";
 
   @override
-  String? get windowsPath => r"AppData\Local\Vivaldi\User Data";
+  String? get windowsPath => 'AppData/Local/Vivaldi/User Data';
 
   @override
   List<String>? get aliases => ["vivaldi-stable", "vivaldistable"];
+}
+
+class Epic extends ChromiumBasedBrowser {
+  @override
+  String get name => 'Epic Privacy Browser';
+
+  @override
+  bool get profileSupport => false;
+
+  @override
+  String? get windowsPath =>
+      'AppData/Local/Epic Privacy Browser/User Data/Default';
+
+  @override
+  String? get macPath =>
+      'Library/Application Support/HiddenReflex/Epic/Default';
 }
