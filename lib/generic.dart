@@ -67,9 +67,9 @@ abstract class Browser {
     }
   }
 
-  Bookmark bookmarksParser(String bookmarkPath);
+  List<Bookmark> bookmarksParser(String bookmarkPath);
 
-  String historySQL({int limit = 20});
+  String get historySQL;
 
   List<String> profiles({required String profileFile}) {
     if (!Directory(historyDir!).existsSync()) {
@@ -114,10 +114,7 @@ abstract class Browser {
     return fetchHistory(historyPaths: historyPaths);
   }
 
-  Future<List<History>> fetchHistory({
-    List<String>? historyPaths,
-    int limit = 20,
-  }) async {
+  Future<List<History>> fetchHistory({List<String>? historyPaths}) async {
     historyPaths ??= paths(profileFile: historyFile);
 
     List<History> histories = [];
@@ -127,7 +124,7 @@ abstract class Browser {
       if (size == 0) continue;
 
       var dir = await Directory.systemTemp.createTemp();
-      var f = File("${dir.path}/$historyFile");
+      var f = File('${dir.path}/$historyFile');
       await f.create();
       String tmpFile = f.path;
 
@@ -135,7 +132,7 @@ abstract class Browser {
 
       var conn =
           sqlite3.open('file:$tmpFile?mode=ro&immutable=1&nolock=1', uri: true);
-      var result = conn.select(historySQL(limit: limit));
+      var result = conn.select(historySQL);
       for (var e in result) {
         histories.add(History.fromJson(e));
       }
@@ -145,10 +142,10 @@ abstract class Browser {
     return histories;
   }
 
-  Future<Bookmark?> fetchBookmarks() async {
+  Future<List<Bookmark>?> fetchBookmarks() async {
     assert(
       bookmarksFile != null,
-      "Bookmarks are not supported for $name browser",
+      'Bookmarks are not supported for $name browser',
     );
 
     var bookmarkPaths = paths(profileFile: bookmarksFile!);
@@ -163,7 +160,7 @@ abstract class Browser {
       if (size == 0) continue;
 
       var dir = Directory.systemTemp.createTempSync();
-      var f = File("${dir.path}/$bookmarksFile");
+      var f = File('${dir.path}/$bookmarksFile');
       await f.create();
       String tmpFile = f.path;
 
@@ -179,7 +176,7 @@ abstract class ChromiumBasedBrowser extends Browser {
   ChromiumBasedBrowser({
     super.sqlite3Path,
   }) : super(
-          profileDirPrefixes: ["Default*", "Profile*"],
+          profileDirPrefixes: ['Default*', 'Profile*'],
         );
 
   @override
@@ -189,32 +186,67 @@ abstract class ChromiumBasedBrowser extends Browser {
   String? get bookmarksFile => 'Bookmarks';
 
   @override
-  Bookmark bookmarksParser(String bookmarkPath) {
-    var bm = jsonDecode(File(bookmarkPath).readAsStringSync());
-    return Bookmark.fromJson(bm['roots']);
+  List<Bookmark> bookmarksParser(String bookmarkPath) {
+    List<Bookmark> _deeper(
+      Map<String, dynamic> json,
+      String folder,
+      List<Bookmark> bookmarksList,
+    ) {
+      for (var node in json.keys) {
+        if (node == 'children') {
+          for (var child in json[node]) {
+            if (child['type'] == 'url') {
+              bookmarksList.add(Bookmark(
+                folder: folder,
+                url: child['url'],
+                name: child['name'],
+                date: DateTime.fromMicrosecondsSinceEpoch(
+                  int.parse(child['date_added']),
+                ),
+              ));
+            } else if (child['type'] == 'folder') {
+              bookmarksList =
+                  _deeper(child, join(folder, child['name']), bookmarksList);
+            }
+          }
+          break;
+        } else {
+          bookmarksList = _deeper(json[node], folder, bookmarksList);
+        }
+      }
+      return bookmarksList;
+    }
+
+    Map<String, dynamic> bm = jsonDecode(File(bookmarkPath).readAsStringSync());
+
+    List<Bookmark> bookmarksList = [];
+
+    Map<String, dynamic> roots = bm['roots'];
+
+    for (var root in roots.keys) {
+      if (roots[root] is Map) {
+        bookmarksList = _deeper(roots[root], root, bookmarksList);
+      }
+    }
+
+    return bookmarksList;
   }
 
   @override
-  String historySQL({int limit = 20}) {
+  String get historySQL {
     return """
-            SELECT
+           SELECT
                 datetime(
                     visits.visit_time/1000000-11644473600, 'unixepoch', 'localtime'
                 ) as 'visit_time',
-                 datetime(
-                    urls.last_visit_time/1000000-11644473600, 'unixepoch', 'localtime'
-                ) as 'last_visit_time',
                 urls.url,
-                urls.title,
-                visits.visit_duration,
-                urls.visit_count
+                urls.title
             FROM
                 visits INNER JOIN urls ON visits.url = urls.id
             WHERE
                 visits.visit_duration > 0
             ORDER BY
                 visit_time DESC
-            LIMIT $limit
         """;
   }
 }

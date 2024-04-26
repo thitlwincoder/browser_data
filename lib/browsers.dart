@@ -1,3 +1,5 @@
+import 'package:sqlite3/sqlite3.dart';
+
 import 'generic.dart';
 import 'model.dart';
 
@@ -18,7 +20,7 @@ class Chromium extends ChromiumBasedBrowser {
 
   @override
   List<String>? get aliases {
-    return ["chromiumhtm", "chromium-browser", "chromiumhtml"];
+    return ['chromiumhtm', 'chromium-browser', 'chromiumhtml'];
   }
 }
 
@@ -42,7 +44,7 @@ class Chrome extends ChromiumBasedBrowser {
 
   @override
   List<String>? get aliases {
-    return ["chromehtml", "google-chrome", "chromehtm"];
+    return ['chromehtml', 'google-chrome', 'chromehtm'];
   }
 }
 
@@ -74,7 +76,7 @@ class Firefox extends Browser {
   String? get macPath => 'Library/Application Support/Firefox/Profiles/';
 
   @override
-  String historySQL({int limit = 20}) {
+  String get historySQL {
     return """
         SELECT
             datetime(
@@ -90,43 +92,48 @@ class Firefox extends Browser {
             moz_historyvisits.place_id = moz_places.id
         WHERE
             visit_date IS NOT NULL AND url LIKE 'http%' AND title IS NOT NULL
-        LIMIT $limit
     """;
   }
 
   @override
-  Bookmark bookmarksParser(String bookmarkPath) {
-    throw UnimplementedError();
+  List<Bookmark> bookmarksParser(String bookmarkPath) {
+    var bookmarkSQL = """
+            SELECT
+                datetime(
+                    moz_bookmarks.dateAdded/1000000,'unixepoch','localtime'
+                ) AS added_time,
+                url,
+                moz_bookmarks.title,
+                moz_folder.title
+            FROM
+                moz_bookmarks JOIN moz_places, moz_bookmarks as moz_folder
+            ON
+                moz_bookmarks.fk = moz_places.id
+                AND moz_bookmarks.parent = moz_folder.id
+            WHERE
+                moz_bookmarks.dateAdded IS NOT NULL AND url LIKE 'http%'
+                AND moz_bookmarks.title IS NOT NULL
+       """;
+
+    var conn = sqlite3.open('file:$bookmarkPath?mode=ro', uri: true);
+    var result = conn.select(bookmarkSQL);
+
+    var bookmarks = <Bookmark>[];
+
+    for (var e in result) {
+      bookmarks.add(
+        Bookmark(
+          url: e['url'],
+          name: e['title'],
+          folder: e['folder'],
+          date: DateTime.fromMicrosecondsSinceEpoch(int.parse(e['d'])),
+        ),
+      );
+    }
+    conn.dispose();
+
+    return bookmarks;
   }
-  // @override
-  // Bookmark bookmarksParser(String bookmarkPath) {
-  //   var bookmarkSQL = """
-  //           SELECT
-  //               datetime(
-  //                   moz_bookmarks.dateAdded/1000000,'unixepoch','localtime'
-  //               ) AS added_time,
-  //               url, moz_bookmarks.title, moz_folder.title
-  //           FROM
-  //               moz_bookmarks JOIN moz_places, moz_bookmarks as moz_folder
-  //           ON
-  //               moz_bookmarks.fk = moz_places.id
-  //               AND moz_bookmarks.parent = moz_folder.id
-  //           WHERE
-  //               moz_bookmarks.dateAdded IS NOT NULL AND url LIKE 'http%'
-  //               AND moz_bookmarks.title IS NOT NULL
-  //      """;
-
-  //   var conn = sqlite3.open('file:$bookmarkPath?mode=ro', uri: true);
-  //   var result = conn.select(bookmarkSQL);
-
-  //   throw UnimplementedError();
-  //   // for (var e in result) {
-  //   //   bookmarks.add(Bookmark.fromJson(e));
-  //   // }
-  //   // conn.dispose();
-
-  //   // return Bookmark(bookmarkBar: bookmarkBar, other: other, synced: synced);
-  // }
 }
 
 class LibreWolf extends Firefox {
@@ -158,14 +165,7 @@ class Safari extends Browser {
   String get historyFile => 'History.db';
 
   @override
-  Bookmark bookmarksParser(String bookmarkPath) {
-    throw UnimplementedError();
-  }
-
-  @override
-  String historySQL({
-    int limit = 20,
-  }) {
+  String get historySQL {
     return """
         SELECT
             datetime(
@@ -181,9 +181,11 @@ class Safari extends Browser {
             history_items.id = history_visits.history_item
         ORDER BY
             visit_time DESC
-        LIMIT $limit
     """;
   }
+
+  @override
+  List<Bookmark> bookmarksParser(String bookmarkPath) => [];
 }
 
 class Edge extends ChromiumBasedBrowser {
@@ -196,17 +198,17 @@ class Edge extends ChromiumBasedBrowser {
   bool get profileSupport => true;
 
   @override
-  String? get linuxPath => ".config/microsoft-edge-dev";
+  String? get linuxPath => '.config/microsoft-edge-dev';
 
   @override
-  String? get macPath => "Library/Application Support/Microsoft Edge";
+  String? get macPath => 'Library/Application Support/Microsoft Edge';
 
   @override
   String? get windowsPath => 'AppData/Local/Microsoft/Edge/User Data';
 
   @override
   List<String>? get aliases {
-    return ["msedgehtm", "msedge", "microsoft-edge", "microsoft-edge-dev"];
+    return ['msedgehtm', 'msedge', 'microsoft-edge', 'microsoft-edge-dev'];
   }
 }
 
@@ -220,13 +222,13 @@ class Opera extends ChromiumBasedBrowser {
   bool get profileSupport => false;
 
   @override
-  String? get linuxPath => ".config/opera";
+  String? get linuxPath => '.config/opera';
 
   @override
   String? get windowsPath => 'AppData/Roaming/Opera Software/Opera Stable';
 
   @override
-  String? get macPath => "Library/Application Support/com.operasoftware.Opera";
+  String? get macPath => 'Library/Application Support/com.operasoftware.Opera';
 }
 
 class OperaGX extends ChromiumBasedBrowser {
@@ -239,10 +241,10 @@ class OperaGX extends ChromiumBasedBrowser {
   bool get profileSupport => false;
 
   @override
-  String? get windowsPath => r"AppData\Roaming\Opera Software\Opera GX Stable";
+  String? get windowsPath => 'AppData/Roaming/Opera Software/Opera GX Stable';
 
   @override
-  List<String>? get aliases => ["operagxstable", "operagx-stable"];
+  List<String>? get aliases => ['operagxstable', 'operagx-stable'];
 }
 
 class Brave extends ChromiumBasedBrowser {
@@ -255,11 +257,11 @@ class Brave extends ChromiumBasedBrowser {
   bool get profileSupport => true;
 
   @override
-  String? get linuxPath => ".config/BraveSoftware/Brave-Browser";
+  String? get linuxPath => '.config/BraveSoftware/Brave-Browser';
 
   @override
   String? get macPath {
-    return "Library/Application Support/BraveSoftware/Brave-Browser";
+    return 'Library/Application Support/BraveSoftware/Brave-Browser';
   }
 
   @override
@@ -268,7 +270,7 @@ class Brave extends ChromiumBasedBrowser {
   }
 
   @override
-  List<String>? get aliases => ["bravehtml"];
+  List<String>? get aliases => ['bravehtml'];
 }
 
 class Vivaldi extends ChromiumBasedBrowser {
@@ -281,16 +283,16 @@ class Vivaldi extends ChromiumBasedBrowser {
   bool get profileSupport => true;
 
   @override
-  String? get linuxPath => ".config/vivaldi";
+  String? get linuxPath => '.config/vivaldi';
 
   @override
-  String? get macPath => "Library/Application Support/Vivaldi";
+  String? get macPath => 'Library/Application Support/Vivaldi';
 
   @override
   String? get windowsPath => 'AppData/Local/Vivaldi/User Data';
 
   @override
-  List<String>? get aliases => ["vivaldi-stable", "vivaldistable"];
+  List<String>? get aliases => ['vivaldi-stable', 'vivaldistable'];
 }
 
 class Epic extends ChromiumBasedBrowser {

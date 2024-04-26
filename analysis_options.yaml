@@ -18,6 +18,7 @@ include: package:lints/recommended.yaml
 linter:
   rules:
     no_leading_underscores_for_local_identifiers: false
+    prefer_single_quotes: true
 # analyzer:
 #   exclude:
 #     - path/to/excluded/files/**
