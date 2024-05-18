@@ -157,3 +157,25 @@ Future<Uint8List?> cryptUnprotectData(Uint8List encryptedData) async {
     calloc.free(decryptedBlob);
   }
 }
+
+Future<void> copyFile(File file, String path) async {
+  final newPath = file.absolute.path.replaceFirst(file.path, path);
+
+  final newFile = File.fromUri(Uri.file(newPath));
+
+  if (!await newFile.exists()) {
+    await newFile.create(recursive: true);
+  }
+
+  final stream = file.openRead();
+
+  final sink = newFile.openWrite();
+
+  await for (final bytes in stream) {
+    sink.add(bytes);
+
+    await sink.flush();
+  }
+
+  await sink.close();
+}

@@ -6,7 +6,6 @@ import 'dart:typed_data';
 
 import 'package:browser_data/browser_data.dart';
 import 'package:encrypt/encrypt.dart';
-import 'package:file_copy/file_copy.dart';
 import 'package:path/path.dart';
 import 'package:sqlite3/open.dart';
 import 'package:sqlite3/sqlite3.dart';
@@ -129,7 +128,7 @@ abstract class Browser {
       await f.create();
       String tmpFile = f.path;
 
-      await FileCopy.copyFile(File(historyPath), tmpFile);
+      await copyFile(File(historyPath), tmpFile);
 
       var conn =
           sqlite3.open('file:$tmpFile?mode=ro&immutable=1&nolock=1', uri: true);
@@ -165,7 +164,7 @@ abstract class Browser {
       await f.create();
       String tmpFile = f.path;
 
-      await FileCopy.copyFile(File(bookmarkPath), tmpFile);
+      await copyFile(File(bookmarkPath), tmpFile);
 
       return bookmarksParser(tmpFile);
     }
@@ -204,7 +203,7 @@ abstract class Browser {
       await f.create();
       String tmpFile = f.path;
 
-      await FileCopy.copyFile(File(p), tmpFile);
+      await copyFile(File(p), tmpFile);
 
       var conn =
           sqlite3.open('file:$tmpFile?mode=ro&immutable=1&nolock=1', uri: true);
