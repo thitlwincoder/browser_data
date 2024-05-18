@@ -9,11 +9,12 @@
 
 `browser_data` is a dart package to retrieve the browser's data.
 
-## Features
-- [x] History
-- [x] Bookmarks
-- [x] Passwords
-- [ ] Downloads
+| Features      | Windows | Mac | Linux
+| ------------- | ------- | --- | ----- |
+| History       |   :heavy_check_mark:   |:heavy_check_mark: | :heavy_check_mark:
+| Bookmarks     | :heavy_check_mark: |:heavy_check_mark: | :heavy_check_mark:
+| Passwords     |   :heavy_check_mark:  |   | 
+| Downloads     |      |   | 
 
 ## Support Browsers
 - Chromium
@@ -72,14 +73,20 @@ To get `history` from a browser.
 You can limit the history count.
 
 ```dart
-var outputs = await browser.fetchHistory(limit: 10);
+var histories = await browser.fetchHistory(limit: 10);
 ```
 
 To get `bookmarks` from a browser.
 
 ```dart
-var outputs = await browser.fetchBookmarks();
+var bookmarks = await browser.fetchBookmarks();
 ```
+To get `passwords` from a browser.
+
+```dart
+var passwords = await browser.fetchPasswords();
+```
+
 ## Contribution
 Feel free to file an [issue](https://github.com/thitlwincoder/browser_data/issues/new) if you find a problem or make pull requests.
 
