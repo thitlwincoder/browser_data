@@ -10,14 +10,12 @@ Future<void> main(List<String> args) async {
   var browser = Chrome(sqlite3Path: './sqlite3.dll');
 
   // get history from this browser
-  // var histories = await browser.fetchHistory(limit: 2);
+  var histories = await browser.fetchHistory();
 
-  // get bookmarks from this browser
   var bookmarks = await browser.fetchBookmarks();
 
-  for (var e in bookmarks ?? <Bookmark>[]) {
-    formatPrint(e.toJson());
-  }
+  // get bookmarks from this browser
+  var passwords = await browser.fetchPasswords();
 }
 
 void formatPrint(Map<String, dynamic> map) {

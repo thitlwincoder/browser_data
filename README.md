@@ -12,8 +12,8 @@
 ## Features
 - [x] History
 - [x] Bookmarks
+- [x] Passwords
 - [ ] Downloads
-- [ ] Passwords
 
 ## Support Browsers
 - Chromium
@@ -26,6 +26,12 @@
 - OperaGX
 - Brave
 - Vivaldi
+- Epic
+- Avast
+- Torch
+- Orbitum
+- CentBrowser
+- Yandex
 
 ## Getting Started
 

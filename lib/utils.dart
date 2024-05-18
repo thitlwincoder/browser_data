@@ -1,7 +1,11 @@
+import 'dart:ffi';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:browser_data/browsers.dart';
+import 'package:ffi/ffi.dart';
 import 'package:logger/logger.dart';
+import 'package:win32/win32.dart';
 import 'package:win32_registry/win32_registry.dart';
 
 import 'generic.dart';
@@ -102,5 +106,54 @@ extension StringExtension on String {
       var p = length + value;
       return substring(p, p + 1);
     }
+  }
+}
+
+DateTime dateParse(String date) {
+  return DateTime.fromMicrosecondsSinceEpoch(int.parse(date));
+}
+
+Future<Uint8List?> cryptUnprotectData(Uint8List encryptedData) async {
+  final encryptedBlob = calloc<CRYPT_INTEGER_BLOB>();
+  final decryptedBlob = calloc<CRYPT_INTEGER_BLOB>();
+
+  try {
+    // Allocate and set the input DATA_BLOB
+    encryptedBlob.ref.pbData = calloc<Uint8>(encryptedData.length);
+    encryptedBlob.ref.cbData = encryptedData.length;
+    encryptedBlob.ref.pbData
+        .asTypedList(encryptedData.length)
+        .setAll(0, encryptedData);
+
+    // Call CryptUnprotectData
+    final result = CryptUnprotectData(
+      encryptedBlob,
+      nullptr,
+      nullptr,
+      nullptr,
+      nullptr,
+      0,
+      decryptedBlob,
+    );
+
+    if (result == 0) {
+      // Decryption failed
+      final error = GetLastError();
+      print('CryptUnprotectData failed with error: $error');
+      return null;
+    } else {
+      // Decryption succeeded, copy the output data
+      final decryptedData =
+          decryptedBlob.ref.pbData.asTypedList(decryptedBlob.ref.cbData);
+      return Uint8List.fromList(decryptedData);
+    }
+  } finally {
+    // Free allocated memory
+    if (encryptedBlob.ref.pbData != nullptr)
+      calloc.free(encryptedBlob.ref.pbData);
+    if (decryptedBlob.ref.pbData != nullptr)
+      LocalFree(decryptedBlob.ref.pbData);
+    calloc.free(encryptedBlob);
+    calloc.free(decryptedBlob);
   }
 }

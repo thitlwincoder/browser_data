@@ -2,13 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:browser_data/browser_data.dart';
+import 'package:encrypt/encrypt.dart';
 import 'package:file_copy/file_copy.dart';
 import 'package:path/path.dart';
 import 'package:sqlite3/open.dart';
 import 'package:sqlite3/sqlite3.dart';
-
-import 'model.dart';
 
 abstract class Browser {
   String get name;
@@ -170,6 +171,68 @@ abstract class Browser {
     }
     return null;
   }
+
+  Future<Uint8List?>? _getMasterKey() {
+    var f = File(join(historyDir!, 'Local State'));
+    if (!f.existsSync()) return null;
+
+    var localState = jsonDecode(f.readAsStringSync());
+
+    var key = base64Decode(localState['os_crypt']['encrypted_key']);
+    key = key.sublist(5);
+
+    return cryptUnprotectData(key);
+  }
+
+  Future<List<Password>?> fetchPasswords() async {
+    var _paths = paths(profileFile: 'Login Data');
+
+    var key = await _getMasterKey();
+
+    if (key == null) return null;
+
+    List<Password> passwords = [];
+
+    for (var p in _paths) {
+      var size = await File(p).length();
+      if (size == 0) continue;
+
+      var dir = await Directory.systemTemp.createTemp();
+      var f = File('${dir.path}/Login Data');
+      await f.create();
+      String tmpFile = f.path;
+
+      await FileCopy.copyFile(File(p), tmpFile);
+
+      var conn =
+          sqlite3.open('file:$tmpFile?mode=ro&immutable=1&nolock=1', uri: true);
+      var result = conn.select(
+          'SELECT action_url, username_value, password_value FROM logins');
+
+      for (var e in result) {
+        var password = e['password_value'];
+        var pass = _decryptPassword(password, key);
+
+        var url = '${e['action_url']}';
+        var name = '${e['username_value']}';
+
+        if (url.isEmpty || name.isEmpty) continue;
+
+        passwords.add(Password(url: url, username: name, password: pass));
+      }
+    }
+
+    return passwords;
+  }
+
+  String _decryptPassword(Uint8List buff, Uint8List key) {
+    var iv = buff.sublist(3, 15);
+    var payload = buff.sublist(15);
+
+    var encrypter = Encrypter(AES(Key(key), mode: AESMode.gcm));
+    var decryptedPass = encrypter.decrypt(Encrypted(payload), iv: IV(iv));
+    return decryptedPass;
+  }
 }
 
 abstract class ChromiumBasedBrowser extends Browser {
@@ -200,9 +263,7 @@ abstract class ChromiumBasedBrowser extends Browser {
                 folder: folder,
                 url: child['url'],
                 name: child['name'],
-                date: DateTime.fromMicrosecondsSinceEpoch(
-                  int.parse(child['date_added']),
-                ),
+                date: dateParse(child['date_added']),
               ));
             } else if (child['type'] == 'folder') {
               bookmarksList =

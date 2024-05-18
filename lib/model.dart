@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:browser_data/browser_data.dart';
+
 History historyFromJson(String str) => History.fromJson(json.decode(str));
 
 String historyToJson(History data) => json.encode(data.toJson());
@@ -42,10 +44,10 @@ class Bookmark {
   });
 
   factory Bookmark.fromJson(Map<String, dynamic> json) => Bookmark(
-        name: json['name'],
         url: json['url'],
-        date: DateTime.fromMicrosecondsSinceEpoch(int.parse(json['date'])),
+        name: json['name'],
         folder: json['folder'],
+        date: dateParse(json['date']),
       );
 
   Map<String, dynamic> toJson() => {
@@ -102,32 +104,26 @@ class Bookmark {
 //       };
 // }
 
-// List<Password> passwordFromJson(String str) =>
-//     List<Password>.from(json.decode(str).map((x) => Password.fromJson(x)));
+class Password {
+  final String url;
+  final String username;
+  final String password;
 
-// String passwordToJson(List<Password> data) =>
-//     json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+  Password({
+    required this.url,
+    required this.username,
+    required this.password,
+  });
 
-// class Password {
-//   final String url;
-//   final String username;
-//   final Uint8List password;
+  factory Password.fromJson(Map<String, dynamic> json) => Password(
+        url: json['url'],
+        username: json['username'],
+        password: json['password'],
+      );
 
-//   Password({
-//     required this.url,
-//     required this.username,
-//     required this.password,
-//   });
-
-//   factory Password.fromJson(Map<String, dynamic> json) => Password(
-//         url: json['origin_url'],
-//         username: json['username_value'],
-//         password: json['password_value'],
-//       );
-
-//   Map<String, dynamic> toJson() => {
-//         'origin_url': url,
-//         'username_value': username,
-//         'password_value': String.fromCharCodes(password),
-//       };
-// }
+  Map<String, dynamic> toJson() => {
+        'url': url,
+        'username': username,
+        'password': password,
+      };
+}

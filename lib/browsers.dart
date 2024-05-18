@@ -303,10 +303,63 @@ class Epic extends ChromiumBasedBrowser {
   bool get profileSupport => false;
 
   @override
-  String? get windowsPath =>
-      'AppData/Local/Epic Privacy Browser/User Data/Default';
+  String? get windowsPath => 'AppData/Local/Epic Privacy Browser/User Data';
 
   @override
-  String? get macPath =>
-      'Library/Application Support/HiddenReflex/Epic/Default';
+  String? get macPath => 'Library/Application Support/HiddenReflex/Epic';
+}
+
+class Avast extends ChromiumBasedBrowser {
+  @override
+  String get name => 'Avast Secure Browser';
+
+  @override
+  bool get profileSupport => false;
+
+  @override
+  String? get windowsPath => 'AppData/Local/AVAST Software/Browser/User Data';
+}
+
+class Torch extends ChromiumBasedBrowser {
+  @override
+  String get name => 'Torch';
+
+  @override
+  bool get profileSupport => false;
+
+  @override
+  String? get windowsPath => 'AppData/Local/Torch/User Data';
+}
+
+class Orbitum extends ChromiumBasedBrowser {
+  @override
+  String get name => 'Orbitum';
+
+  @override
+  bool get profileSupport => false;
+
+  @override
+  String? get windowsPath => 'AppData/Local/Orbitum/User Data';
+}
+
+class CentBrowser extends ChromiumBasedBrowser {
+  @override
+  String get name => 'CentBrowser';
+
+  @override
+  bool get profileSupport => false;
+
+  @override
+  String? get windowsPath => 'AppData/Local/CentBrowser/User Data';
+}
+
+class Yandex extends ChromiumBasedBrowser {
+  @override
+  String get name => 'Yandex Browser';
+
+  @override
+  bool get profileSupport => false;
+
+  @override
+  String? get windowsPath => 'AppData/Local/Yandex/YandexBrowser/User Data';
 }
