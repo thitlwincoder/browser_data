@@ -68,12 +68,17 @@ You can also use it with a specific browser.
 ```dart
 var browser = Chrome(sqlite3Path: './sqlite3.dll');
 ```
-
-To get `history` from a browser.
-You can limit the history count.
+To get `profiles` from a browser.
 
 ```dart
-var histories = await browser.fetchHistory(limit: 10);
+var profiles = await browser.fetchProfiles();
+// [Default, Guest Profile, Profile 1, Profile 2]
+```
+To get `history` from a browser.
+If `profiles` parameter is null, get from all profiles.
+
+```dart
+var histories = await browser.fetchHistory(profiles: ['Default']);
 ```
 
 To get `bookmarks` from a browser.

@@ -149,10 +149,12 @@ Future<Uint8List?> cryptUnprotectData(Uint8List encryptedData) async {
     }
   } finally {
     // Free allocated memory
-    if (encryptedBlob.ref.pbData != nullptr)
+    if (encryptedBlob.ref.pbData != nullptr) {
       calloc.free(encryptedBlob.ref.pbData);
-    if (decryptedBlob.ref.pbData != nullptr)
+    }
+    if (decryptedBlob.ref.pbData != nullptr) {
       LocalFree(decryptedBlob.ref.pbData);
+    }
     calloc.free(encryptedBlob);
     calloc.free(decryptedBlob);
   }

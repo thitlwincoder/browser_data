@@ -1,6 +1,6 @@
 name: browser_data
 description: dart package to retrieve browser's data.
-version: 0.0.4
+version: 0.0.5
 repository: https://github.com/thitlwincoder/browser_data
 issue_tracker: https://github.com/thitlwincoder/browser_data/issues
 
@@ -32,4 +32,4 @@ dependencies:
   encrypt: ^5.0.3
 
 dev_dependencies:
-  lint: ^2.3.0
+  lints: ^4.0.0

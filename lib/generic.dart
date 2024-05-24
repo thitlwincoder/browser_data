@@ -71,7 +71,7 @@ abstract class Browser {
 
   String get historySQL;
 
-  List<String> profiles({required String profileFile}) {
+  List<String> _getProfiles({required String profileFile}) {
     if (!Directory(historyDir!).existsSync()) {
       print('$name browser is not installed');
       return [];
@@ -81,41 +81,62 @@ abstract class Browser {
 
     List<String> profileDirs = [];
 
-    var files = Directory(historyDir!).listSync(recursive: true);
+    try {
+      var files = Directory(historyDir!).listSync(recursive: true);
 
-    for (var item in files) {
-      if (basename(item.path) == profileFile) {
-        profileDirs.add(basename(item.parent.path));
+      for (var item in files) {
+        if (basename(item.path) == profileFile) {
+          profileDirs.add(basename(item.parent.path));
+        }
+      }
+    } catch (e) {
+      var files = Directory(historyDir!).listSync();
+
+      for (var e in files) {
+        if (e is File) continue;
+
+        var files = Directory(e.path).listSync();
+        for (var item in files) {
+          if (basename(item.path) == profileFile) {
+            profileDirs.add(basename(item.parent.path));
+          }
+        }
       }
     }
+
     return profileDirs;
   }
 
-  String historyPathProfile({required String profileDir}) {
-    return '$historyDir/$profileDir/$historyFile';
-  }
+  // String historyPathProfile({required String profileDir}) {
+  //   return join(historyDir!, profileDir, historyFile);
+  // }
 
-  String bookmarkPathProfile({required String profileDir}) {
-    return '$historyDir/$profileDir/$bookmarksFile';
-  }
+  // String bookmarkPathProfile({required String profileDir}) {
+  //   return join(historyDir!, profileDir, bookmarksFile);
+  // }
 
-  List<String> paths({required String profileFile}) {
+  List<String> paths({required String profileFile, List<String>? profiles}) {
+    profiles ??= _getProfiles(profileFile: profileFile);
+
     return [
-      for (var profileDir in profiles(profileFile: profileFile))
-        join(historyDir!, profileDir, profileFile)
+      for (var profile in profiles) join(historyDir!, profile, profileFile)
     ];
   }
 
-  Future<void> historyProfiles({required List<String> profileDirs}) {
-    var historyPaths = [
-      for (var profileDir in profileDirs)
-        historyPathProfile(profileDir: profileDir),
-    ];
-    return fetchHistory(historyPaths: historyPaths);
+  // Future<void> historyProfiles({required List<String> profileDirs}) {
+  //   var historyPaths = [
+  //     for (var profileDir in profileDirs)
+  //       historyPathProfile(profileDir: profileDir),
+  //   ];
+  //   return fetchHistory(profiles: historyPaths);
+  // }
+
+  List<String> fetchProfiles() {
+    return _getProfiles(profileFile: historyFile);
   }
 
-  Future<List<History>> fetchHistory({List<String>? historyPaths}) async {
-    historyPaths ??= paths(profileFile: historyFile);
+  Future<List<History>> fetchHistory({List<String>? profiles}) async {
+    var historyPaths = paths(profileFile: historyFile, profiles: profiles);
 
     List<History> histories = [];
 
@@ -142,13 +163,13 @@ abstract class Browser {
     return histories;
   }
 
-  Future<List<Bookmark>?> fetchBookmarks() async {
+  Future<List<Bookmark>?> fetchBookmarks({List<String>? profiles}) async {
     assert(
       bookmarksFile != null,
       'Bookmarks are not supported for $name browser',
     );
 
-    var bookmarkPaths = paths(profileFile: bookmarksFile!);
+    var bookmarkPaths = paths(profileFile: bookmarksFile!, profiles: profiles);
 
     for (var bookmarkPath in bookmarkPaths) {
       var file = File(bookmarkPath);
@@ -185,14 +206,14 @@ abstract class Browser {
     return cryptUnprotectData(key);
   }
 
-  Future<List<Password>?> fetchPasswords() async {
+  Future<List<Password>?> fetchPasswords({List<String>? profiles}) async {
     var key = await _getMasterKey();
 
     if (key == null) return null;
 
     List<Password> passwords = [];
 
-    var _paths = paths(profileFile: 'Login Data');
+    var _paths = paths(profileFile: 'Login Data', profiles: profiles);
 
     for (var p in _paths) {
       var size = await File(p).length();

@@ -1,5 +1,10 @@
+## 0.0.5
+
+- Add specific profiles support.
+
 ## 0.0.4
 
+- Add password.
 - Add more browsers.
 
 ## 0.0.3
@@ -13,4 +18,4 @@
 ## 0.0.1
 
 - Initial version.
-- Include download & bookmark.
+- Include history & bookmark.
