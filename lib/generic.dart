@@ -135,7 +135,15 @@ abstract class Browser {
     return _getProfiles(profileFile: historyFile);
   }
 
-  Future<List<History>> fetchHistory({List<String>? profiles}) async {
+  /// [page] is pagination index number
+  ///
+  /// [limit] is pagination limit number
+  /// value is must be 4, 8, 12, ...
+  Future<List<History>> fetchHistory({
+    int page = 1,
+    int limit = 4,
+    List<String>? profiles,
+  }) async {
     var historyPaths = paths(profileFile: historyFile, profiles: profiles);
 
     List<History> histories = [];
@@ -153,7 +161,12 @@ abstract class Browser {
 
       var conn =
           sqlite3.open('file:$tmpFile?mode=ro&immutable=1&nolock=1', uri: true);
-      var result = conn.select(historySQL);
+
+      // int offset = page < 1 ? 0 : (page - 1) * limit;
+
+      var stmt = conn.prepare(historySQL);
+      var result = stmt.select([limit / 4, page < 1 ? 0 : page - 1]);
+
       for (var e in result) {
         histories.add(History.fromJson(e));
       }
@@ -163,7 +176,9 @@ abstract class Browser {
     return histories;
   }
 
-  Future<List<Bookmark>?> fetchBookmarks({List<String>? profiles}) async {
+  Future<List<Bookmark>?> fetchBookmarks({
+    List<String>? profiles,
+  }) async {
     assert(
       bookmarksFile != null,
       'Bookmarks are not supported for $name browser',
@@ -198,12 +213,16 @@ abstract class Browser {
     var f = File(join(historyDir!, 'Local State'));
     if (!f.existsSync()) return null;
 
-    var localState = jsonDecode(f.readAsStringSync());
+    try {
+      var localState = jsonDecode(f.readAsStringSync());
 
-    var key = base64Decode(localState['os_crypt']['encrypted_key']);
-    key = key.sublist(5);
+      var key = base64Decode(localState['os_crypt']['encrypted_key']);
+      key = key.sublist(5);
 
-    return cryptUnprotectData(key);
+      return cryptUnprotectData(key);
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<List<Password>?> fetchPasswords({List<String>? profiles}) async {
@@ -315,20 +334,19 @@ abstract class ChromiumBasedBrowser extends Browser {
   }
 
   @override
-  String get historySQL {
-    return """
-           SELECT
-                datetime(
-                    visits.visit_time/1000000-11644473600, 'unixepoch', 'localtime'
-                ) as 'visit_time',
-                urls.url,
-                urls.title
-            FROM
-                visits INNER JOIN urls ON visits.url = urls.id
-            WHERE
-                visits.visit_duration > 0
-            ORDER BY
-                visit_time DESC
+  String get historySQL => """
+          SELECT
+              datetime(
+                  visits.visit_time/1000000-11644473600, 'unixepoch', 'localtime'
+              ) as 'visit_time',
+              urls.url,
+              urls.title
+          FROM
+              visits INNER JOIN urls ON visits.url = urls.id
+          WHERE
+              visits.visit_duration > 0
+          ORDER BY
+              visit_time DESC
+          LIMIT (?) OFFSET (?);
         """;
-  }
 }

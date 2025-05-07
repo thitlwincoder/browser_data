@@ -76,8 +76,7 @@ class Firefox extends Browser {
   String? get macPath => 'Library/Application Support/Firefox/Profiles/';
 
   @override
-  String get historySQL {
-    return """
+  String get historySQL => """
         SELECT
             datetime(
                 visit_date/1000000, 'unixepoch', 'localtime'
@@ -92,8 +91,10 @@ class Firefox extends Browser {
             moz_historyvisits.place_id = moz_places.id
         WHERE
             visit_date IS NOT NULL AND url LIKE 'http%' AND title IS NOT NULL
+        ORDER BY
+            visit_time DESC
+        LIMIT (?) OFFSET (?);
     """;
-  }
 
   @override
   List<Bookmark> bookmarksParser(String bookmarkPath) {
@@ -165,8 +166,7 @@ class Safari extends Browser {
   String get historyFile => 'History.db';
 
   @override
-  String get historySQL {
-    return """
+  String get historySQL => """
         SELECT
             datetime(
                 visit_time + 978307200, 'unixepoch', 'localtime'
@@ -181,11 +181,13 @@ class Safari extends Browser {
             history_items.id = history_visits.history_item
         ORDER BY
             visit_time DESC
+        LIMIT (?) OFFSET (?);
     """;
-  }
 
   @override
-  List<Bookmark> bookmarksParser(String bookmarkPath) => [];
+  List<Bookmark> bookmarksParser(String bookmarkPath) {
+    return [];
+  }
 }
 
 class Edge extends ChromiumBasedBrowser {
@@ -296,6 +298,8 @@ class Vivaldi extends ChromiumBasedBrowser {
 }
 
 class Epic extends ChromiumBasedBrowser {
+  Epic({super.sqlite3Path});
+
   @override
   String get name => 'Epic Privacy Browser';
 
@@ -310,6 +314,8 @@ class Epic extends ChromiumBasedBrowser {
 }
 
 class Avast extends ChromiumBasedBrowser {
+  Avast({super.sqlite3Path});
+
   @override
   String get name => 'Avast Secure Browser';
 
@@ -321,6 +327,8 @@ class Avast extends ChromiumBasedBrowser {
 }
 
 class Torch extends ChromiumBasedBrowser {
+  Torch({super.sqlite3Path});
+
   @override
   String get name => 'Torch';
 
@@ -332,6 +340,8 @@ class Torch extends ChromiumBasedBrowser {
 }
 
 class Orbitum extends ChromiumBasedBrowser {
+  Orbitum({super.sqlite3Path});
+
   @override
   String get name => 'Orbitum';
 
@@ -343,6 +353,8 @@ class Orbitum extends ChromiumBasedBrowser {
 }
 
 class CentBrowser extends ChromiumBasedBrowser {
+  CentBrowser({super.sqlite3Path});
+
   @override
   String get name => 'CentBrowser';
 
@@ -354,6 +366,8 @@ class CentBrowser extends ChromiumBasedBrowser {
 }
 
 class Yandex extends ChromiumBasedBrowser {
+  Yandex({super.sqlite3Path});
+
   @override
   String get name => 'Yandex Browser';
 

@@ -7,21 +7,21 @@ Future<void> main(List<String> args) async {
   // var browser = defaultBrowser(sqlite3Path: './sqlite3.dll');
 
   // get specific browser
-  var browser = Chrome(sqlite3Path: './sqlite3.dll');
+  var browser = Brave();
 
   // get profiles
   var profiles = browser.fetchProfiles();
   print(profiles);
 
   // get history from browser
-  var histories = await browser.fetchHistory(profiles: ['Profile 1']);
+  var histories = await browser.fetchHistory(limit: 4, page: 1);
   print(histories);
 
   // get bookmarks from browser
   var bookmarks = await browser.fetchBookmarks(profiles: ['Default']);
   print(bookmarks);
 
-  // get passwords from browser
+  // get passwords from browser (not supported on all browsers)
   var passwords = await browser.fetchPasswords();
   print(passwords);
 }
