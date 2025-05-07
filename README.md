@@ -9,12 +9,12 @@
 
 `browser_data` is a dart package to retrieve the browser's data.
 
-| Features      | Windows | Mac | Linux
-| ------------- | ------- | --- | ----- |
-| History       |   :heavy_check_mark:   |:heavy_check_mark: | :heavy_check_mark:
-| Bookmarks     | :heavy_check_mark: |:heavy_check_mark: | :heavy_check_mark:
-| Passwords     |   :heavy_check_mark:  |   | 
-| Downloads     |      |   | 
+| Features  | Windows            | Mac                | Linux              |
+| --------- | ------------------ | ------------------ | ------------------ |
+| History   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Bookmarks | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| Passwords | :heavy_check_mark: |                    |
+| Downloads |                    |                    |
 
 ## Support Browsers
 - Chromium
@@ -57,35 +57,57 @@ flutter packages get
 
 Before starting, you must download [sqlite3.dll](https://github.com/thitlwincoder/browser_data/blob/main/example/sqlite3.dll) for this package.
 
+### Browser
+
 If you want to get the `default` browser from the device :
 
 ```dart
 import 'package:browser_data/browser_data.dart';
 
-var browser = defaultBrowser(sqlite3Path: './sqlite3.dll');
+var browser = defaultBrowser();
 ```
-You can also use it with a specific browser.
+You can also use it with a specific browser
+```dart
+var browser = Chrome();
+```
+
+If you want to use with specific sqlite3
 ```dart
 var browser = Chrome(sqlite3Path: './sqlite3.dll');
 ```
+
+### Profiles
+
 To get `profiles` from a browser.
 
 ```dart
 var profiles = await browser.fetchProfiles();
 // [Default, Guest Profile, Profile 1, Profile 2]
 ```
+
+### History
+
 To get `history` from a browser.
 If `profiles` parameter is null, get from all profiles.
 
 ```dart
 var histories = await browser.fetchHistory(profiles: ['Default']);
 ```
+Use pagination for history list
+```dart
+var histories = await browser.fetchHistory(limit: 4, page: 1);
+```
+
+### Bookmark
 
 To get `bookmarks` from a browser.
 
 ```dart
 var bookmarks = await browser.fetchBookmarks();
 ```
+
+### Password
+
 To get `passwords` from a browser.
 
 ```dart
