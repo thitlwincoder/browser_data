@@ -34,7 +34,7 @@ String _defaultBrowserWin() {
     path:
         r'Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice',
   );
-  var progId = key.getValueAsString('ProgId');
+  var progId = key.getStringValue('ProgId');
   if (progId == null) {
     throw Exception('Could not determine default browser');
   }
